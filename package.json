@@ -1,0 +1,16 @@
+{
+  "name": "database-utilities",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "3.4.0",
+    "connect-mysql": "^2.1.1",
+    "underscore": "1.5.2",
+    "async": "0.9.0",
+    "mysql" : "^2.5.3",
+    "pg": "^4.0.0",
+    "connect-pg-simple": "^2.1.1",
+    "validator": "3.16.0",
+    "pg-transact": "1.0.1",
+    "dh-node-utilities": "0.2.0"
+  }
+}
