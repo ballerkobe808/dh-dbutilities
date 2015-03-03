@@ -287,6 +287,7 @@ exports.generateInsertObject = function (tableName, parameters) {
  * @param tableName - The name of the table.
  * @param parameters - The object of key value pairs where keys are the db column names.
  * @param conditions - The sql condition statement.
+ * @param conditionParams - The array of parameters that match the conditions place markers.
  */
 exports.generateUpdateObject = function (tableName, parameters, conditions, conditionParams) {
   var sql = 'UPDATE ' + tableName + ' SET ';
