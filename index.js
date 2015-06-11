@@ -397,3 +397,32 @@ exports.groupRows = function (groupByField, rows, callback) {
     return callback(err);
   }
 };
+
+/**
+ * Converts a placeholder filled sql string with the params array for debug printing.
+ * @param sql - The sql statement containing placehoders.
+ * @param params - The array of parameters.
+ * @returns {string}
+ */
+exports.queryToString = function (sql, params) {
+  var final = '';
+  var paramsIndex = 0;
+
+  for (var i = 0; i < sql.length; i++) {
+    if (sql.charAt(i) == '?') {
+      if (typeof params[paramsIndex] == 'string') {
+        final += "'" + params[paramsIndex] + "'";
+      }
+      else {
+        final += params[paramsIndex];
+      }
+
+      paramsIndex++;
+    }
+    else {
+      final += sql.charAt(i);
+    }
+  }
+
+  return final;
+}
