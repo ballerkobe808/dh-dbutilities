@@ -411,7 +411,12 @@ exports.queryToString = function (sql, params) {
   for (var i = 0; i < sql.length; i++) {
     if (sql.charAt(i) == '?') {
       if (typeof params[paramsIndex] == 'string') {
-        final += "'" + params[paramsIndex] + "'";
+        if (params[paramsIndex].lastIndexOf('@', 0) === 0) {
+          final += params[paramsIndex];
+        }
+        else {
+          final += "'" + params[paramsIndex] + "'";
+        }
       }
       else if (Object.prototype.toString.call(params[paramsIndex]) === '[object Date]') {
         final += "'" + params[paramsIndex] + "'";
