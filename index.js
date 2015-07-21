@@ -404,7 +404,7 @@ exports.groupRows = function (groupByField, rows, callback) {
  * @param params - The array of parameters.
  * @returns {string}
  */
-exports.queryToString = function (sql, params) {
+exports.queryToString = function (sql, params, timezone) {
   var final = '';
   var paramsIndex = 0;
 
@@ -419,7 +419,7 @@ exports.queryToString = function (sql, params) {
         }
       }
       else if (Object.prototype.toString.call(params[paramsIndex]) === '[object Date]') {
-        final += "'" + params[paramsIndex] + "'";
+        final += "'" + dateToString(params[paramsIndex], timezone) + "'";
       }
       else {
         final += params[paramsIndex];
@@ -433,4 +433,46 @@ exports.queryToString = function (sql, params) {
   }
 
   return final;
+}
+
+function dateToString(date, timeZone) {
+  var dt = new Date(date);
+
+  if (timeZone && timeZone != 'local') {
+    var tz = convertTimezone(timeZone);
+
+    dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
+    if (tz !== false) {
+      dt.setTime(dt.getTime() + (tz * 60000));
+    }
+  }
+
+  var year   = dt.getFullYear();
+  var month  = zeroPad(dt.getMonth() + 1, 2);
+  var day    = zeroPad(dt.getDate(), 2);
+  var hour   = zeroPad(dt.getHours(), 2);
+  var minute = zeroPad(dt.getMinutes(), 2);
+  var second = zeroPad(dt.getSeconds(), 2);
+  var millisecond = zeroPad(dt.getMilliseconds(), 3);
+
+  return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
+};
+
+function zeroPad(number, length) {
+  number = number.toString();
+  while (number.length < length) {
+    number = '0' + number;
+  }
+
+  return number;
+}
+
+function convertTimezone(tz) {
+  if (tz == "Z") return 0;
+
+  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+  if (m) {
+    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+  }
+  return false;
 }
