@@ -6,6 +6,7 @@ exports.constants = constants;
 var _ = require('underscore');
 var validator = require('validator');
 var async = require('async');
+var stringUtilities = require('dh-node-utilities').StringUtils;
 
 // current adapter to use.
 var currentAdapterName = null;
@@ -415,7 +416,7 @@ exports.queryToString = function (sql, params, timezone) {
           final += params[paramsIndex];
         }
         else {
-          final += "'" + params[paramsIndex] + "'";
+          final += "'" + stringUtilities.replaceAll(params[paramsIndex], "'", "\\'") + "'";
         }
       }
       else if (Object.prototype.toString.call(params[paramsIndex]) === '[object Date]') {
