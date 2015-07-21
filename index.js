@@ -413,6 +413,9 @@ exports.queryToString = function (sql, params) {
       if (typeof params[paramsIndex] == 'string') {
         final += "'" + params[paramsIndex] + "'";
       }
+      else if (Object.prototype.toString.call(params[paramsIndex]) === '[object Date]') {
+        final += "'" + params[paramsIndex] + "'";
+      }
       else {
         final += params[paramsIndex];
       }
