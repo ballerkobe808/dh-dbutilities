@@ -412,8 +412,8 @@ exports.queryToString = function (sql, params, timezone) {
   for (var i = 0; i < sql.length; i++) {
     if (sql.charAt(i) == '?') {
       if (typeof params[paramsIndex] == 'string') {
-        if (params[paramsIndex].lastIndexOf('@', 0) === 0) {
-          final += params[paramsIndex];
+        if (params[paramsIndex].lastIndexOf('[@]', 0) === 0) {
+          final += stringUtilities.replaceAll(params[paramsIndex], '[@]', '@');
         }
         else {
           final += "'" + stringUtilities.replaceAll(params[paramsIndex], "'", "\\'") + "'";
