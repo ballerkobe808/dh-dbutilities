@@ -25,7 +25,9 @@ ____________________________________________________________________
   - runStringQuery(queryString, callback)
   - runQuery(queryString, params, callback)
   - runStatement(statement, params, callback)
+  - runStatementReturnResult(statement, params, idField, callback)
   - runStatementInTransaction(connection, statement, params, callback)
+  - runStatementInTransactionReturnResult(connection, statement, params, idField, callback)
   - executeStoredProcedure(statement, params, callback)
   - runTransaction(executeFunction, callback);
 
