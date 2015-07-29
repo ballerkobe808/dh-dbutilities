@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "dependencies": {
     "async": "0.9.0",
+    "connect-mssql": "^1.3.2",
     "connect-mysql": "^2.1.1",
     "connect-pg-simple": "^2.1.1",
     "dh-node-utilities": "0.2.0",
