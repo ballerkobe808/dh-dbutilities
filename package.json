@@ -8,6 +8,7 @@
     "connect-pg-simple": "^2.1.1",
     "dh-node-utilities": "0.2.0",
     "express": "3.4.0",
+    "express-session": "^1.11.3",
     "mssql": "^2.1.6",
     "mysql": "^2.5.3",
     "pg": "^4.0.0",
