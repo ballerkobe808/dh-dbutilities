@@ -18,7 +18,6 @@ var isConfigured = false;
 // reference to the db options.
 var dbOptions = null;
 
-
 //======================================================================================
 // Initialization and Destruction Functions.
 //======================================================================================
