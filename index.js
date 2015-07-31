@@ -8,6 +8,10 @@ var validator = require('validator');
 var async = require('async');
 var stringUtilities = require('dh-node-utilities').StringUtils;
 
+// MSSQL specific
+var sql = require('mssql');
+exports.TYPES = sql.TYPES;
+
 // current adapter to use.
 var currentAdapterName = null;
 var currentAdapter = null;
