@@ -5,6 +5,7 @@ var sql = require('mssql');
 var poolInitialized = false;
 var _ = require('underscore');
 var stringUtilities = require('dh-node-utilities').StringUtils;
+var async = require('async');
 
 // save the db options.
 var dbOptions = null
@@ -27,8 +28,6 @@ exports.configure = function (options, callback) {
 
   // build the mysql specific connection pool options.
   var config = {
-    server: options.server,
-    port: options.port,
     user: options.username,
     password: options.password,
     database: options.dbName,
@@ -37,14 +36,30 @@ exports.configure = function (options, callback) {
     }
   };
 
+  // set both host and port if
+  if (stringUtilities.isEmpty(options.instanceName)) {
+    config.server = options.server;
+    config.port = options.port;
+  }
+  else {
+    config.server = options.server;
+    config.port = options.port;
+    config.options = {};
+    config.options.instanceName = options.instanceName;
+  }
+
   // save the options.
   dbOptions = options;
   dbConfig = config;
 
   // create the mysql connection pool.
   sql.connect(dbConfig, function (err) {
-    // wait for a connection to be established.
-    return callback(err);
+    if (err) {
+      return callback(err);
+    }
+
+    poolInitialized = true;
+    return callback();
   });
 };
 
@@ -92,10 +107,10 @@ exports.getSessionStore = function(callback) {
 
 /**
  * Runs a simple string query with no parameters.
- * @param sql - The string query.
+ * @param sqlString - The string query.
  * @param callback - The finished callback function. callback (err, resultSet).
  */
-exports.runStringQuery = function(sql, callback) {
+exports.runStringQuery = function(sqlString, callback) {
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
@@ -105,7 +120,7 @@ exports.runStringQuery = function(sql, callback) {
   var request = new sql.Request();
 
   // run the query.
-  request.query(sql, function(err, rows) {
+  request.query(sqlString, function(err, rows) {
     return callback(err, rows);
   });
 };
@@ -181,6 +196,7 @@ function convertQueryAndParamsForMSSql(query, params) {
   // used to generate the parameter place holders.
   var paramString = 'param';
   var index = 0;
+  var i = 0;
 
   // loop until all ? are found.
   while((i=query.indexOf('?', i+1)) >= 0) {

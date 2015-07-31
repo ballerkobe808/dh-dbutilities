@@ -15,6 +15,9 @@ ____________________________________________________________________
       connectionPoolLimit: Number,
       sessionTableName: String,
       sessionSecret: String
+      
+      // MS SQL specific
+      instanceName: String
     };
     
 ##Session Store Setup
