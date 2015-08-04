@@ -186,7 +186,51 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
 //runStatementReturnResult(statement, params, idField, callback)
 //runStatementInTransaction(connection, statement, params, callback)
 //runStatementInTransactionReturnResult(connection, statement, params, idField, callback)
-//executeStoredProcedure(statement, params, callback)
+
+/**
+ * Executes a stored procedure.
+ * params:
+ * [
+ *  paramType: 'input' | 'output',
+ *  dataType: dbUtils.TYPES.NVarChar,
+ *  value: <value>
+ * ]
+ * @param procedureName - The call statement.
+ * @param params - The params array.
+ * @param callback - The finished callback funciton.
+ * @param multipleResultSets - flag indicating if multiple results sets are returned.
+ */
+exports.executeStoredProcedure = function(procedureName, params, callback, multipleResultSets) {
+  // make sure the connection pool was initialized.
+  if (!poolInitialized) {
+    return callback(new Error('Connection pool not initialized.'));
+  }
+
+  // build the request object.
+  var request = new sql.Request();
+
+  // set the multiple flag.
+  if (multipleResultSets) {
+    request.multiple = true;
+  }
+
+  // add the parameters to the call.
+  for (var i = 0; i < params.length; i++) {
+    var currentParam = params[i];
+    if (currentParam.paramType.toLowerCase() == 'input') {
+      request.input('input_parameter', currentParam.dataType, currentParam.value);
+    }
+    else {
+      request.output('output_parameter', currentParam.dataType);
+    }
+  }
+
+  // execute the proc.
+  request.execute(procedureName, function (err, recordsets, returnValue) {
+    return callback(err, recordsets, returnValue);
+  });
+};
+
 //runTransaction(executeFunction, callback);
 
 //======================================================================================
