@@ -98,7 +98,7 @@ exports.getSessionStore = function(callback) {
   };
 
   // return a new instance of the MySQL session store.
-  return callback(null, new MSSQLStore(config, options));
+  return callback(null, new MSSQLStore(dbConfig, options));
 };
 
 //======================================================================================
