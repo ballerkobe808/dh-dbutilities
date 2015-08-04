@@ -182,8 +182,19 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
   });
 }
 
-//runStatement(statement, params, callback)
+///**
+// * Runs an update statement.
+// * @param statement - The sql statement.
+// * @param params - The parameters.
+// * @param callback - The finished callback function.
+// */
+//exports.runStatement = function(statement, params, callback) {
+//
+//};
+
+
 //runStatementReturnResult(statement, params, idField, callback)
+
 //runStatementInTransaction(connection, statement, params, callback)
 //runStatementInTransactionReturnResult(connection, statement, params, idField, callback)
 
@@ -349,13 +360,10 @@ function convertParamsObjectArrayToQueryObject(sql, params, ps) {
     values: {}
   };
 
-  // build the values object.
-  var values = {};
-
   // add the input parameters.
   for (var i = 0; i < params.length; i++) {
     ps.input(params[i].name, params[i].type);
-    values[params[i].name] = params[i].value;
+    result.values[params[i].name] = params[i].value;
   }
 
   return result;

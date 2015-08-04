@@ -2,7 +2,7 @@ Database Utilities
 ====================================================================
 ____________________________________________________________________
 
-##Configuration Options
+## Configuration Options
 
     // get the settings options from the config module.
     var options = {
@@ -20,7 +20,7 @@ ____________________________________________________________________
       instanceName: String
     };
     
-##Session Store Setup
+## Session Store Setup
 
 #### PostreSQL Setup:
 
