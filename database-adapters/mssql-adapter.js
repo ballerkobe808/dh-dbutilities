@@ -137,15 +137,17 @@ exports.runQuery = function (queryString, params, callback) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
-  var query = convertQueryAndParamsForMSSql(queryString, params);
-
   // build the prepared statement object.
   var ps = new sql.PreparedStatement();
+  var query = null;
 
-  // add the input parameters.
-  for (var i = 0; i < query.types.length; i++) {
-    var type = query.types[i];
-    ps.input(type.name, type.type);
+  // check if the params is an array of objects.
+  if (isObjectParams(params)) {
+    query = convertParamsObjectArrayToQueryObject(queryString, params, ps);
+  }
+  else {
+    // convert the query.
+    query = convertQueryAndParamsForMSSql(queryString, params, ps);
   }
 
   // prepare the statement.
@@ -184,12 +186,12 @@ exports.runQuery = function (queryString, params, callback) {
  * placehodlers and an object.
  * @param query - The string query.
  * @param params - The params array.
+ * @param ps - The prepared statement object.
  */
-function convertQueryAndParamsForMSSql(query, params) {
+function convertQueryAndParamsForMSSql(query, params, ps) {
   // initialize the object.
   var result = {
     sql: '',
-    types: [],
     values: {}
   }
 
@@ -207,13 +209,8 @@ function convertQueryAndParamsForMSSql(query, params) {
     query = query.substr(0, i) + '@' + paramName + query.substr(i + 1);
 
     // add the value to the param object.
-    var type = {
-      type: getType(params[index]),
-      value: params[index],
-      name: paramName
-    };
-    result.types.push(type);
     result.values[paramName] = params[index];
+    ps.input(paramName, getType(params[index]));
 
     // increment the index.
     index++;
@@ -259,4 +256,51 @@ function getType(value) {
  */
 function isInt(n){
   return Number(n) === n && n % 1 === 0;
+}
+
+/**
+ * Checks if the params array is an array of type objects mssql module uses.
+ * @param paramsArray - The params array.
+ */
+function isObjectParams(paramsArray) {
+  // default result to false;
+  var result = false;
+
+  // check if the params array is empty or not.
+  if (paramsArray && paramsArray.length > 0) {
+    for (var i = 0; i < paramsArray.length; i++) {
+      if (_.isObject(paramsArray[i]) && !stringUtilities.isEmpty(paramsArray[i].type)) {
+        result = true;
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Builds a query object out of the sql and params array.
+ * @param sql
+ * @param params
+ * @param ps
+ * @returns {{sql: *, values: {}}}
+ */
+function convertParamsObjectArrayToQueryObject(sql, params, ps) {
+  // build the result object.
+  var result = {
+    sql: sql,
+    values: {}
+  };
+
+  // build the values object.
+  var values = {};
+
+  // add the input parameters.
+  for (var i = 0; i < params.length; i++) {
+    ps.input(params[i].name, params[i].type);
+    values[params[i].name] = params[i].value;
+  }
+
+  return result;
 }
