@@ -182,21 +182,132 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
   });
 }
 
-///**
-// * Runs an update statement.
-// * @param statement - The sql statement.
-// * @param params - The parameters.
-// * @param callback - The finished callback function.
-// */
-//exports.runStatement = function(statement, params, callback) {
-//
-//};
+/**
+ * Runs an update statement.
+ * @param statement - The sql statement.
+ * @param params - The parameters.
+ * @param callback - The finished callback function.
+ */
+exports.runStatement = function(statement, params, callback) {
+  // make sure the connection pool was initialized.
+  if (!poolInitialized) {
+    return callback(new Error('Connection pool not initialized.'));
+  }
 
+  // build the prepared statement object.
+  var ps = new sql.PreparedStatement();
+  var query = null;
 
-//runStatementReturnResult(statement, params, idField, callback)
+  // set the multiple flag.
+  if (multipleResultSets) {
+    ps.multiple = true;
+  }
 
-//runStatementInTransaction(connection, statement, params, callback)
-//runStatementInTransactionReturnResult(connection, statement, params, idField, callback)
+  // check if the params is an array of objects.
+  if (isObjectParams(params)) {
+    query = convertParamsObjectArrayToQueryObject(queryString, params, ps);
+  }
+  else {
+    // convert the query.
+    query = convertQueryAndParamsForMSSql(queryString, params, ps);
+  }
+
+  // prepare the statement.
+  ps.prepare(query.sql, function (err) {
+    if (err) {
+      return callback(err);
+    }
+
+    // execute the statement.
+    ps.execute(query.values, function (er, resultSet, returnValue) {
+      // unprepare the staetment.
+      ps.unprepare(function(e) {
+        if (e) {
+          console.log(new Error('Failed to unprepare a prepared statement.'));
+        }
+
+        return callback(err, resultSet, returnValue);
+      });
+    });
+  });
+};
+
+/**
+ * Runs a sql update, insert, delete on the database with an array of parameters to
+ * inject into the sql statement.
+ * @param statement - The sql statement string with question mark placeholders.
+ * @param params - An array of parameters.
+ * @param idField - The field name of the ID field.
+ * @param callback - The finished callback function. callback(err, results);
+ */
+exports.runStatementReturnResult = function(statement, params, idField, callback) {
+  this.runStatement(statement, params, callback);
+};
+
+/**
+ * Runs a sql update, insert, delete on the database with an array of parameters to
+ * inject into the sql statement.
+ * @param connection - The transaction object.
+ * @param statement - The sql statement.
+ * @param params - The params array.
+ * @param callback - The finished callback function.
+ */
+exports.runStatementInTransaction = function(connection, statement, params, callback) {
+  // make sure the connection pool was initialized.
+  if (!poolInitialized) {
+    return callback(new Error('Connection pool not initialized.'));
+  }
+
+  // build the prepared statement object.
+  var ps = new sql.PreparedStatement(connection);
+  var query = null;
+
+  // set the multiple flag.
+  if (multipleResultSets) {
+    ps.multiple = true;
+  }
+
+  // check if the params is an array of objects.
+  if (isObjectParams(params)) {
+    query = convertParamsObjectArrayToQueryObject(queryString, params, ps);
+  }
+  else {
+    // convert the query.
+    query = convertQueryAndParamsForMSSql(queryString, params, ps);
+  }
+
+  // prepare the statement.
+  ps.prepare(query.sql, function (err) {
+    if (err) {
+      return callback(err);
+    }
+
+    // execute the statement.
+    ps.execute(query.values, function (er, resultSet, returnValue) {
+      // unprepare the staetment.
+      ps.unprepare(function(e) {
+        if (e) {
+          console.log(new Error('Failed to unprepare a prepared statement.'));
+        }
+
+        return callback(err, resultSet, returnValue);
+      });
+    });
+  });
+};
+
+/**
+ * Runs a sql update, insert, delete on the database with an array of parameters to
+ * inject into the sql statement.
+ * @param connection - The transaction object.
+ * @param statement - The sql statement.
+ * @param params - The params array.
+ * @param idField - The id field of the primary key.
+ * @param callback - The finished callback function.
+ */
+exports.runStatementInTransactionReturnResult = function(connection, statement, params, idField, callback) {
+  this.runStatementInTransaction(connection, statement, params, callback);
+};
 
 /**
  * Executes a stored procedure.
@@ -242,7 +353,46 @@ exports.executeStoredProcedure = function(procedureName, params, callback, multi
   });
 };
 
-//runTransaction(executeFunction, callback);
+/**
+ * Creates and runs a transaction on the database.
+ * @param executeFunction - The function to be executed containing the statements to run. Should take in a callback function.
+ * @param callback - The finished callback function.
+ */
+exports.runTransaction = function(executeFunction, callback) {
+  // make sure the connection pool was initialized.
+  if (!poolInitialized) {
+    return callback(new Error('Connection pool not initialized.'));
+  }
+
+  // create a transaction connection object.
+  var transaction = new sql.Transaction();
+
+  // begin the transaction.
+  transaction.begin(function (err) {
+    // make sure the begin statement finished successfully.
+    if (err) {
+      return callback(err);
+    }
+
+    // fire the execute function.
+    executeFunction(transaction, function (er) {
+      if (er) {
+        transaction.rollback(function (e) {
+          if (e) {
+            console.log(e);
+          }
+
+          return callback(er);
+        });
+      }
+
+      // commit the changes.
+      transaction.commit(function (e) {
+          return callback(e);
+      });
+    });
+  });
+};
 
 //======================================================================================
 // Private Functions.
