@@ -97,9 +97,10 @@ exports.getSessionStore = function(callback) {
  * Runs a string sql query with no external parameters.
  * @param query - The string query.
  * @param callback - The finished callback function.
+ * @param multipleResultSets - Flag indicating if multiple result sets are returned.
  */
-exports.runStringQuery = function (query, callback) {
-  currentAdapter.runStringQuery(query, callback);
+exports.runStringQuery = function (query, callback, multipleResultSets) {
+  currentAdapter.runStringQuery(query, callback, multipleResultSets);
 };
 
 /**
@@ -107,9 +108,10 @@ exports.runStringQuery = function (query, callback) {
  * @param sqlString - The sql string with question mark placeholders.
  * @param params - The array of parameters to be inserted.
  * @param callback - The finished callback function. callback(err, rows);
+ * @param multipleResultSets - Flag indicating if multiple result sets are returned.
  */
-exports.runQuery = function (sqlString, params, callback) {
-  currentAdapter.runQuery(sqlString, params, callback);
+exports.runQuery = function (sqlString, params, callback, multipleResultSets) {
+  currentAdapter.runQuery(sqlString, params, callback, multipleResultSets);
 };
 
 /**

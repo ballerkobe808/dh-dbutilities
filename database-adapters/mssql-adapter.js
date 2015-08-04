@@ -109,8 +109,9 @@ exports.getSessionStore = function(callback) {
  * Runs a simple string query with no parameters.
  * @param sqlString - The string query.
  * @param callback - The finished callback function. callback (err, resultSet).
+ * @param multipleResultSets - Flag indicating if multiple result sets are returned.
  */
-exports.runStringQuery = function(sqlString, callback) {
+exports.runStringQuery = function(sqlString, callback, multipleResultSets) {
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
@@ -118,6 +119,11 @@ exports.runStringQuery = function(sqlString, callback) {
 
   // build the request object.
   var request = new sql.Request();
+
+  // set the multiple flag.
+  if (multipleResultSets) {
+    request.multiple = true;
+  }
 
   // run the query.
   request.query(sqlString, function(err, rows) {
@@ -130,8 +136,9 @@ exports.runStringQuery = function(sqlString, callback) {
  * @param queryString - The query string.
  * @param params - The params array.
  * @param callback - The finished callback function.
+ * @param multipleResultSets - Flag indicating if multiple result sets are returned.
  */
-exports.runQuery = function (queryString, params, callback) {
+exports.runQuery = function (queryString, params, callback, multipleResultSets) {
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
@@ -140,6 +147,11 @@ exports.runQuery = function (queryString, params, callback) {
   // build the prepared statement object.
   var ps = new sql.PreparedStatement();
   var query = null;
+
+  // set the multiple flag.
+  if (multipleResultSets) {
+    ps.multiple = true;
+  }
 
   // check if the params is an array of objects.
   if (isObjectParams(params)) {
