@@ -33,6 +33,9 @@ exports.configure = function (options, callback) {
     database: options.dbName,
     pool: {
       max: options.connectionPoolLimit
+    },
+    options: {
+      abortTransactionOnError: true
     }
   };
 
@@ -44,7 +47,6 @@ exports.configure = function (options, callback) {
   else {
     config.server = options.server;
     config.port = options.port;
-    config.options = {};
     config.options.instanceName = options.instanceName;
   }
 
@@ -219,14 +221,14 @@ exports.runStatement = function(statement, params, callback) {
     }
 
     // execute the statement.
-    ps.execute(query.values, function (er, resultSet, returnValue) {
+    ps.execute(query.values, function (er, resultSet) {
       // unprepare the staetment.
       ps.unprepare(function(e) {
         if (e) {
           console.log(new Error('Failed to unprepare a prepared statement.'));
         }
 
-        return callback(err, resultSet, returnValue);
+        return callback(err, resultSet);
       });
     });
   });
@@ -283,14 +285,14 @@ exports.runStatementInTransaction = function(connection, statement, params, call
     }
 
     // execute the statement.
-    ps.execute(query.values, function (er, resultSet, returnValue) {
+    ps.execute(query.values, function (er, resultSet) {
       // unprepare the staetment.
       ps.unprepare(function(e) {
         if (e) {
           console.log(new Error('Failed to unprepare a prepared statement.'));
         }
 
-        return callback(err, resultSet, returnValue);
+        return callback(err, resultSet);
       });
     });
   });

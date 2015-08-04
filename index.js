@@ -198,9 +198,10 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
  * @param statement - The string procedure call with question mark wildcards.
  * @param params - The procedure parameters to replace.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.executeStoredProcedure = function (statement, params, callback) {
-  currentAdapter.executeStoredProcedure(statement, params, callback);
+exports.executeStoredProcedure = function (statement, params, callback, multipleResultSets) {
+  currentAdapter.executeStoredProcedure(statement, params, callback, multipleResultSets);
 };
 
 /**
