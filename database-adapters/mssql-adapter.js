@@ -338,20 +338,43 @@ exports.executeStoredProcedure = function(procedureName, params, callback, multi
     request.multiple = true;
   }
 
+  // holds the names of the output params.
+  var outputParams = [];
+
   // add the parameters to the call.
   for (var i = 0; i < params.length; i++) {
     var currentParam = params[i];
     if (currentParam.paramType.toLowerCase() == 'input') {
-      request.input('input_parameter', currentParam.dataType, currentParam.value);
+      request.input(currentParam.name, currentParam.dataType, currentParam.value);
     }
     else {
-      request.output('output_parameter', currentParam.dataType);
+      request.output(currentParam.name, currentParam.dataType);
+      outputParams.push(currentParam.name);
     }
   }
 
   // execute the proc.
   request.execute(procedureName, function (err, recordsets, returnValue) {
-    return callback(err, recordsets, returnValue);
+    if (err) {
+      return callback(err);
+    }
+
+    // get the output values if there are any.
+    var outputValues = {};
+
+    // if there are output params. get the values.
+    if (outputParams.length > 0) {
+
+      // get the output values.
+      for (var i = 0; i < outputParams.length; i++) {
+        // make sure the value is set.
+        if (request.parameters[outputParams[i]]) {
+          outputValues[outputParams[i]] = request.parameters[outputParams[i]].value;
+        }
+      }
+    }
+
+    return callback(null, recordsets, returnValue, outputValues);
   });
 };
 
@@ -390,7 +413,7 @@ exports.runTransaction = function(executeFunction, callback) {
 
       // commit the changes.
       transaction.commit(function (e) {
-          return callback(e);
+        return callback(e);
       });
     });
   });
@@ -412,7 +435,7 @@ function convertQueryAndParamsForMSSql(query, params, ps) {
   var result = {
     sql: '',
     values: {}
-  }
+  };
 
   // used to generate the parameter place holders.
   var paramString = 'param';
@@ -439,7 +462,7 @@ function convertQueryAndParamsForMSSql(query, params, ps) {
   result.sql = query;
 
   return result;
-};
+}
 
 /**
  * Attempts to get the field type.
