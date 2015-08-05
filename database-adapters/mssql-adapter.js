@@ -158,6 +158,33 @@ exports.runStringQuery = function(sqlString, callback, multipleResultSets) {
 };
 
 /**
+ * Runs a simple string query with no parameters.
+ * @param transaction - The transaction object.
+ * @param sqlString - The string query.
+ * @param callback - The finished callback function. callback (err, resultSet).
+ * @param multipleResultSets - Flag indicating if multiple result sets are returned.
+ */
+exports.runStringQueryInTransaction = function(transaction, sqlString, callback, multipleResultSets) {
+  // make sure the connection pool was initialized.
+  if (!poolInitialized) {
+    return callback(new Error('Connection pool not initialized.'));
+  }
+
+  // build the request object.
+  var request = new sql.Request(transaction);
+
+  // set the multiple flag.
+  if (multipleResultSets) {
+    request.multiple = true;
+  }
+
+  // run the query.
+  request.query(sqlString, function(err, rows) {
+    return callback(err, rows);
+  });
+};
+
+/**
  * Runs a prepared statement with parameters.
  * @param queryString - The query string.
  * @param params - The params array.
@@ -216,46 +243,42 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
  * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
 exports.runStatement = function(statement, params, callback, multipleResultSets) {
+  // save a reference.
+  var _this = this;
+
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
-  // build the prepared statement object.
-  var ps = new sql.PreparedStatement();
-  var query = null;
+  // create a transaction connection object.
+  var transaction = new sql.Transaction();
 
-  // set the multiple flag.
-  if (multipleResultSets) {
-    ps.multiple = true;
-  }
-
-  // check if the params is an array of objects.
-  if (isObjectParams(params)) {
-    query = convertParamsObjectArrayToQueryObject(statement, params, ps);
-  }
-  else {
-    // convert the query.
-    query = convertQueryAndParamsForMSSql(statement, params, ps);
-  }
-
-  // prepare the statement.
-  ps.prepare(query.sql, function (err) {
+  // begin the transaction.
+  transaction.begin(function (err) {
+    // make sure the begin statement finished successfully.
     if (err) {
       return callback(err);
     }
 
-    // execute the statement.
-    ps.execute(query.values, function (er, resultSet) {
-      // unprepare the staetment.
-      ps.unprepare(function(e) {
-        if (e) {
-          console.log(new Error('Failed to unprepare a prepared statement.'));
-        }
+    // run the staetment.
+    _this.runStatementInTransaction(transaction, statement, params, function (err, resultSet) {
+      if (err) {
+        transaction.rollback(function (e) {
+          if (e) {
+            console.log(e);
+          }
 
-        return callback(err, resultSet);
-      });
-    });
+          return callback(err);
+        });
+      }
+      else {
+        // commit the changes.
+        transaction.commit(function (e) {
+          return callback(e, resultSet);
+        });
+      }
+    }, multipleResultSets);
   });
 };
 
@@ -282,6 +305,9 @@ exports.runStatementReturnResult = function(statement, params, idField, callback
  * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
 exports.runStatementInTransaction = function(connection, statement, params, callback, multipleResultSets) {
+  // save a reference.
+  var _this = this;
+
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
@@ -438,11 +464,12 @@ exports.runTransaction = function(executeFunction, callback) {
           return callback(er);
         });
       }
-
-      // commit the changes.
-      transaction.commit(function (e) {
-        return callback(e);
-      });
+      else {
+        // commit the changes.
+        transaction.commit(function (e) {
+          return callback(e);
+        });
+      }
     });
   });
 };

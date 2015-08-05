@@ -150,7 +150,7 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
     }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
-        var newRowId = results[0][idField.toUpperCase()];
+        var newRowId = results[0][idField];
         var newResult = {
           resultSet: results,
           newRowId: newRowId
@@ -203,7 +203,7 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
     }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
-        var newRowId = results[0][idField.toUpperCase()];
+        var newRowId = results[0][idField];
         var newResult = {
           resultSet: results,
           newRowId: newRowId
