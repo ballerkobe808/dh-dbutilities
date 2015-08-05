@@ -17,7 +17,8 @@ ____________________________________________________________________
       sessionSecret: String
       
       // MS SQL specific
-      instanceName: String
+      instanceName: String,
+      sessionDatabaseName: String
     };
     
 ## Session Store Setup

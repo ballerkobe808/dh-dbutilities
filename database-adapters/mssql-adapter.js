@@ -99,8 +99,32 @@ exports.getSessionStore = function(callback) {
     table: (dbOptions.sessionTableName) ? dbOptions.sessionTableName : 'sessions',
   };
 
+  // build the mysql specific connection pool options.
+  var config = {
+    user: dbOptions.username,
+    password: dbOptions.password,
+    database: dbOptions.sessionDatabaseName,
+    pool: {
+      max: dbOptions.connectionPoolLimit
+    },
+    options: {
+      abortTransactionOnError: true
+    }
+  };
+
+  // set both host and port if
+  if (stringUtilities.isEmpty(dbOptions.instanceName)) {
+    config.server = dbOptions.server;
+    config.port = dbOptions.port;
+  }
+  else {
+    config.server = dbOptions.server;
+    config.port = dbOptions.port;
+    config.options.instanceName = dbOptions.instanceName;
+  }
+
   // return a new instance of the MySQL session store.
-  return callback(null, new MSSQLStore(dbConfig, options));
+  return callback(null, new MSSQLStore(config, options));
 };
 
 //======================================================================================
