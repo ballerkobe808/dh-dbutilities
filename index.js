@@ -120,18 +120,19 @@ exports.runQuery = function (sqlString, params, callback, multipleResultSets) {
  * @param statement - The sql statement string with question mark placeholders.
  * @param params - an object of key/value pairs where key is field name and value is the value.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatement = function (statement, params, callback) {
-  currentAdapter.runStatement(statement, params, callback);
+exports.runStatement = function (statement, params, callback, multipleResultSets) {
+  currentAdapter.runStatement(statement, params, callback, multipleResultSets);
 };
 
 /**
  * Runs a sql update, insert, delete on the database with an array of parameters to inject into the sql
  * statement and returns the results back.
- * @param statement
- * @param params
- * @param idField
- * @param callback
+ * @param statement - The sql statement string with question mark placeholders.
+ * @param params - an object of key/value pairs where key is field name and value is the value.
+ * @param idField - The ID field name.
+ * @param callback - The finished callback function. callback(err, results);
  */
 exports.runStatementReturnResult = function (statement, params, idField, callback) {
   currentAdapter.runStatementReturnResult(statement, params, idField, function (err, results) {
@@ -147,6 +148,16 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
         results.newRowId = results.rows[0][idField];
       }
     }
+    else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
+      if (results && results.length > 0) {
+        var newRowId = results[0][idField.toUpperCase()];
+        var newResult = {
+          resultSet: results,
+          newRowId: newRowId
+        }
+        results = newResult;
+      }
+    }
 
     return callback(null, results);
   });
@@ -159,9 +170,10 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
  * @param statement - The sql statement string with question mark placeholders.
  * @param params - an object of key/value pairs where key is field name and value is the value.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatementInTransaction = function (connection, statement, params, callback) {
-  currentAdapter.runStatementInTransaction(connection, statement, params, callback);
+exports.runStatementInTransaction = function (connection, statement, params, callback, multipleResultSets) {
+  currentAdapter.runStatementInTransaction(connection, statement, params, callback, multipleResultSets);
 };
 
 /**
@@ -172,6 +184,7 @@ exports.runStatementInTransaction = function (connection, statement, params, cal
  * @param params - an object of key/value pairs where key is field name and value is the value.
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
 exports.runStatementInTransactionReturnResult = function (connection, statement, params, idField, callback) {
   currentAdapter.runStatementInTransactionReturnResult(connection, statement, params, idField, function (err, results) {
@@ -188,9 +201,19 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
         results.newRowId = results.rows[0][idField];
       }
     }
+    else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
+      if (results && results.length > 0) {
+        var newRowId = results[0][idField.toUpperCase()];
+        var newResult = {
+          resultSet: results,
+          newRowId: newRowId
+        }
+        results = newResult;
+      }
+    }
 
     return callback(null, results);
-  });
+  }, multipleResultSets);
 };
 
 /**

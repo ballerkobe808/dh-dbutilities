@@ -213,8 +213,9 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
  * @param statement - The sql statement.
  * @param params - The parameters.
  * @param callback - The finished callback function.
+ * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
-exports.runStatement = function(statement, params, callback) {
+exports.runStatement = function(statement, params, callback, multipleResultSets) {
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
@@ -231,11 +232,11 @@ exports.runStatement = function(statement, params, callback) {
 
   // check if the params is an array of objects.
   if (isObjectParams(params)) {
-    query = convertParamsObjectArrayToQueryObject(queryString, params, ps);
+    query = convertParamsObjectArrayToQueryObject(statement, params, ps);
   }
   else {
     // convert the query.
-    query = convertQueryAndParamsForMSSql(queryString, params, ps);
+    query = convertQueryAndParamsForMSSql(statement, params, ps);
   }
 
   // prepare the statement.
@@ -265,6 +266,7 @@ exports.runStatement = function(statement, params, callback) {
  * @param params - An array of parameters.
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
 exports.runStatementReturnResult = function(statement, params, idField, callback) {
   this.runStatement(statement, params, callback);
@@ -277,8 +279,9 @@ exports.runStatementReturnResult = function(statement, params, idField, callback
  * @param statement - The sql statement.
  * @param params - The params array.
  * @param callback - The finished callback function.
+ * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
-exports.runStatementInTransaction = function(connection, statement, params, callback) {
+exports.runStatementInTransaction = function(connection, statement, params, callback, multipleResultSets) {
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
@@ -295,11 +298,11 @@ exports.runStatementInTransaction = function(connection, statement, params, call
 
   // check if the params is an array of objects.
   if (isObjectParams(params)) {
-    query = convertParamsObjectArrayToQueryObject(queryString, params, ps);
+    query = convertParamsObjectArrayToQueryObject(statement, params, ps);
   }
   else {
     // convert the query.
-    query = convertQueryAndParamsForMSSql(queryString, params, ps);
+    query = convertQueryAndParamsForMSSql(statement, params, ps);
   }
 
   // prepare the statement.
@@ -330,8 +333,9 @@ exports.runStatementInTransaction = function(connection, statement, params, call
  * @param params - The params array.
  * @param idField - The id field of the primary key.
  * @param callback - The finished callback function.
+ * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
-exports.runStatementInTransactionReturnResult = function(connection, statement, params, idField, callback) {
+exports.runStatementInTransactionReturnResult = function(connection, statement, params, idField, callback, multipleResultSets) {
   this.runStatementInTransaction(connection, statement, params, callback);
 };
 
