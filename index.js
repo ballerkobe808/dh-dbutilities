@@ -76,6 +76,11 @@ exports.isConfigured = function () {
  * @param callback
  */
 exports.close = function (callback) {
+  // make sure the adapter has been configured.
+  if (!isConfigured) {
+    return callback(new Error('Module not configured.'));
+  }
+
   currentAdapter.close(function (err) {
     return callback(err);
   });
@@ -86,6 +91,12 @@ exports.close = function (callback) {
  * @param callback - The finished callback function.
  */
 exports.getSessionStore = function(callback) {
+  // check if the module is configured or not.
+  if (!isConfigured) {
+    return callback(new Error('Module not configured.'));
+  }
+
+  // get the sesion store.
   currentAdapter.getSessionStore(callback);
 };
 
