@@ -19,6 +19,9 @@ ____________________________________________________________________
       // MS SQL specific
       instanceName: String,
       sessionDatabaseName: String
+      
+      // MySQL specific
+      multipleStatements: Boolean
     };
     
 ## Session Store Setup
