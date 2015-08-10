@@ -14,5 +14,6 @@ ____________________________________________________________________
       password: String,
       connectionPoolLimit: Number,
       sessionTableName: String,
-      sessionSecret: String
+      sessionSecret: String,
+      multipleStatements: Boolean
     };

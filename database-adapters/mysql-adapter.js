@@ -33,7 +33,8 @@ exports.configure = function (options, callback) {
     connectionLimit: options.connectionPoolLimit,
     sessionTableName: options.sessionTableName,
     sessionSecret: options.sessionSecret,
-    acquireTimeout: 30000
+    acquireTimeout: 30000,
+    multipleStatements: options.multipleStatements
   };
 
   // save the options.
