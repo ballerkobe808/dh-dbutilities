@@ -70,9 +70,14 @@ exports.getSessionStore = function(callback) {
  * Runs a string query with no external parameters on the database.
  * @param sqlQuery - The string query.
  * @param callback - The finished callback function. callback(err, rows);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be received.
  * @returns {*}
  */
-exports.runStringQuery = function (sqlQuery, callback) {
+exports.runStringQuery = function (sqlQuery, callback, multipleResultSets) {
+  if (multipleResultSets) {
+    return callback(new Error("PG adapter doesn't support multiple result sets"));
+  }
+
   // make sure the drive is initialized first.
   if (!driverInitialized()) {
     return callback(new Error('Postgres adapter is not initialized.'));
@@ -108,8 +113,13 @@ exports.runStringQuery = function (sqlQuery, callback) {
  * @param sqlString - The sql string with question mark placeholders.
  * @param params - The array parameters to be added to the sql query.
  * @param callback - The finished callback function. callback(err, rows);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be received.
  */
-exports.runQuery = function (sqlString, params, callback) {
+exports.runQuery = function (sqlString, params, callback, multipleResultSets) {
+  if (multipleResultSets) {
+    return callback(new Error("PG adapter doesn't support multiple result sets"));
+  }
+
   // make sure the drive is initialized first.
   if (!driverInitialized()) {
     return callback(new Error('Postgres adapter is not initialized.'));
@@ -149,8 +159,13 @@ exports.runQuery = function (sqlString, params, callback) {
  * @param statement - The sql statement string with question mark placeholders.
  * @param params - An array of parameters.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be received.
  */
-exports.runStatement = function (statement, params, callback) {
+exports.runStatement = function (statement, params, callback, multipleResultSets) {
+  if (multipleResultSets) {
+    return callback(new Error("PG adapter doesn't support multiple result sets"));
+  }
+
   // make sure the drive is initialized first.
   if (!driverInitialized()) {
     return callback(new Error('Postgres adapter is not initialized.'));
@@ -191,8 +206,13 @@ exports.runStatement = function (statement, params, callback) {
  * @param params - An array of parameters.
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be received.
  */
-exports.runStatementReturnResult = function (statement, params, idField, callback) {
+exports.runStatementReturnResult = function (statement, params, idField, callback, multipleResultSets) {
+  if (multipleResultSets) {
+    return callback(new Error("PG adapter doesn't support multiple result sets"));
+  }
+
   // make sure the drive is initialized first.
   if (!driverInitialized()) {
     return callback(new Error('Postgres adapter is not initialized.'));
@@ -236,8 +256,13 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
  * @param statement - The sql statement string with question mark placeholders.
  * @param params - An array of parameters.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be received.
  */
-exports.runStatementInTransaction = function (client, statement, params, callback) {
+exports.runStatementInTransaction = function (client, statement, params, callback, multipleResultSets) {
+  if (multipleResultSets) {
+    return callback(new Error("PG adapter doesn't support multiple result sets"));
+  }
+
   // replace all the ? placeholders with the postgres style placeholders.
   var query = replacePlaceHolders(statement);
 
@@ -261,8 +286,13 @@ exports.runStatementInTransaction = function (client, statement, params, callbac
  * @param params - An array of parameters.
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating if multiple result sets should be received.
  */
-exports.runStatementInTransactionReturnResult = function (client, statement, params, idField, callback) {
+exports.runStatementInTransactionReturnResult = function (client, statement, params, idField, callback, multipleResultSets) {
+  if (multipleResultSets) {
+    return callback(new Error("PG adapter doesn't support multiple result sets"));
+  }
+
   // replace all the ? placeholders with the postgres style placeholders.
   var query = replacePlaceHolders(statement);
 

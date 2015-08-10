@@ -476,6 +476,29 @@ exports.queryToString = function (sql, params, timezone) {
   return final;
 }
 
+/**
+ * Join the result sets into 1 result set.
+ * @param results - The result sets.
+ */
+exports.joinResultSets = function(results) {
+  // if the results is an array of result sets.
+  if (results[0] && _.isArray(results[0])) {
+    var newResults = [];
+
+    for (var i = 0; i < results.length; i++) {
+      var rs = results[i];
+
+      for (var j =0; j < rs.length; j++) {
+        newResults.push(rs[j]);
+      }
+    }
+
+    results = newResults;
+  }
+
+  return results;
+}
+
 function dateToString(date, timeZone) {
   var dt = new Date(date);
 
