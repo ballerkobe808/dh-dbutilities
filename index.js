@@ -482,6 +482,11 @@ exports.queryToString = function (sql, params, timezone) {
  * @param results - The result sets.
  */
 exports.joinResultSets = function(results) {
+  // check if there is anything in the results.
+  if (!results || results.length == 0) {
+    return results;
+  }
+
   // if the results is an array of result sets.
   if (results[0] && _.isArray(results[0])) {
     var newResults = [];
