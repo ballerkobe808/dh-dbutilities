@@ -1,6 +1,6 @@
 {
   "name": "dh-dbutilities",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "dependencies": {
     "async": "0.9.0",
     "connect-mssql": "^1.3.2",

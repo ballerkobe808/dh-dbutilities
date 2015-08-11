@@ -144,8 +144,9 @@ exports.runStatement = function (statement, params, callback, multipleResultSets
  * @param params - an object of key/value pairs where key is field name and value is the value.
  * @param idField - The ID field name.
  * @param callback - The finished callback function. callback(err, results);
+ * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatementReturnResult = function (statement, params, idField, callback) {
+exports.runStatementReturnResult = function (statement, params, idField, callback, multipleResultSets) {
   currentAdapter.runStatementReturnResult(statement, params, idField, function (err, results) {
     if (err) {
       return callback(err);
@@ -171,7 +172,7 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
     }
 
     return callback(null, results);
-  });
+  }, multipleResultSets);
 };
 
 /**
@@ -197,7 +198,7 @@ exports.runStatementInTransaction = function (connection, statement, params, cal
  * @param callback - The finished callback function. callback(err, results);
  * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatementInTransactionReturnResult = function (connection, statement, params, idField, callback) {
+exports.runStatementInTransactionReturnResult = function (connection, statement, params, idField, callback, multipleResultSets) {
   currentAdapter.runStatementInTransactionReturnResult(connection, statement, params, idField, function (err, results) {
     if (err) {
       return callback(err);
