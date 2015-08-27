@@ -18,7 +18,8 @@ ____________________________________________________________________
       
       // MS SQL specific
       instanceName: String,
-      sessionDatabaseName: String
+      sessionDatabaseName: String,
+      ssl: Object or String. See node-mysql for object specs on this.
       
       // MySQL specific
       multipleStatements: Boolean

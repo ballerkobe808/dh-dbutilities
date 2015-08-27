@@ -34,7 +34,8 @@ exports.configure = function (options, callback) {
     sessionTableName: options.sessionTableName,
     sessionSecret: options.sessionSecret,
     acquireTimeout: 30000,
-    multipleStatements: options.multipleStatements
+    multipleStatements: options.multipleStatements,
+    ssl: options.ssl
   };
 
   // save the options.
