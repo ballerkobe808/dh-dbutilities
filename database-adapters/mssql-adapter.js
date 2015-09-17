@@ -345,7 +345,7 @@ exports.runStatementInTransaction = function(connection, statement, params, call
           console.log(new Error('Failed to unprepare a prepared statement.'));
         }
 
-        return callback(err, resultSet);
+        return callback(er, resultSet);
       });
     });
   });
