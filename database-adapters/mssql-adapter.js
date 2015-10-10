@@ -362,7 +362,7 @@ exports.runStatementInTransaction = function(connection, statement, params, call
  * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
 exports.runStatementInTransactionReturnResult = function(connection, statement, params, idField, callback, multipleResultSets) {
-  this.runStatementInTransaction(connection, statement, params, callback);
+  this.runStatementInTransaction(connection, statement, params, callback, multipleResultSets);
 };
 
 /**
