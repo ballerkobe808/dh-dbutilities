@@ -47,8 +47,8 @@ exports.getSessionStore = function(callback) {
   }
 
   // dependencies.
-  var express = require('express');
-  var PGSessionStore = require('connect-pg-simple')(express.session);
+  var expressSession = require('express-session');
+  var PGSessionStore = require('connect-pg-simple')(expressSession);
 
   // build the options object.
   var options = {

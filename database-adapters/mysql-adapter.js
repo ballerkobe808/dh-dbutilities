@@ -74,8 +74,8 @@ exports.getSessionStore = function(callback) {
   }
 
   // setup the session store.
-  var express = require('express');
-  var MySQLStore = require('connect-mysql')(express);
+  var expressSession = require('express-session');
+  var MySQLStore = require('connect-mysql')(expressSession);
 
   // build the config options.
   var config = {
