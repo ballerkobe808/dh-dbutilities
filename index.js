@@ -96,7 +96,7 @@ exports.getSessionStore = function(callback) {
     return callback(new Error('Module not configured.'));
   }
 
-  // get the sesion store.
+  // get the session store.
   currentAdapter.getSessionStore(callback);
 };
 
@@ -373,11 +373,13 @@ exports.generateUpdateObject = function (tableName, parameters, conditions, cond
 exports.booleanValue = function(value) {
   var result = false;
   try {
-    if (Buffer.isBuffer(value)) {
-      result = validator.toBoolean(value[0]);
-    }
-    else {
-      result = validator.toBoolean(value);
+    if (!stringUtilities.isEmpty(value)) {
+      if (Buffer.isBuffer(value)) {
+        result = validator.toBoolean(value[0].toString());
+      }
+      else {
+        result = validator.toBoolean(value.toString());
+      }
     }
   }
   catch (ex) {
