@@ -197,6 +197,40 @@ exports.runStatement = function (statement, params, callback) {
 };
 
 /**
+ * Runs a bulk insert statement.
+ * @param statement - The insert statement. 
+ * @param params - The values. Ex: [[values], [values]]
+ * @param callback - The finished callback function. callback(err);
+ */
+exports.runBulkInsert = function (statement, params, callback) {
+  // make sure the pool is initialized.
+  if (!poolInitialized()) {
+    return callback(new Error('Connection pool not initialized.'));
+  }
+
+  // get a connection from the connection pool.
+  pool.getConnection(function (err, connection) {
+    // check if an error occurred.
+    if (err) {
+      // release the connection.
+      if (connection) {
+        connection.release();
+      }
+      return callback(err);
+    }
+
+    // fire the query.
+    connection.query(statement, params, function (err, results) {
+      // release the connection back to the pool.
+      connection.release();
+
+      // return the results.
+      return callback(err, results);
+    });
+  });
+};
+
+/**
  * Runs a sql update, insert, delete on the database with an array of parameters to
  * inject into the sql statement.
  * @param statement - The sql statement string with question mark placeholders.

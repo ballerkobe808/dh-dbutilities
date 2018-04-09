@@ -138,6 +138,16 @@ exports.runStatement = function (statement, params, callback, multipleResultSets
 };
 
 /**
+ * Runs a bulk insert statement.
+ * @param statement - The sql insert statement. Ex: INSERT INTO table_name (name, email, comment) VALUES ?;
+ * @param params - The values. Ex: [[values], [values]]
+ * @param callback - The finished callback function. calback(err);
+ */
+exports.runBulkInsert = function (statement, params, callback) {
+  currentAdapter.runBulkInsert(statement, params, callback);
+};
+
+/**
  * Runs a sql update, insert, delete on the database with an array of parameters to inject into the sql
  * statement and returns the results back.
  * @param statement - The sql statement string with question mark placeholders.

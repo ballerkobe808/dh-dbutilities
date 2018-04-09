@@ -200,6 +200,16 @@ exports.runStatement = function (statement, params, callback, multipleResultSets
 };
 
 /**
+ * Runs a bulk insert statement.
+ * @param statement - The insert statement.
+ * @param params - The values. Ex: [[values], [values]]
+ * @param callback - The finished callback function. callback(err);
+ */
+exports.runBulkInsert = function (statement, params, callback) {
+  return callback(new Error('Bulk insert not supported for postgresql adapter.'));
+};
+
+/**
  * Runs a sql update, insert, delete on the database with an array of parameters to
  * inject into the sql statement.
  * @param statement - The sql statement string with question mark placeholders.

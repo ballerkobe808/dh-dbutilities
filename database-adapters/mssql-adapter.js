@@ -261,7 +261,7 @@ exports.runStatement = function(statement, params, callback, multipleResultSets)
       return callback(err);
     }
 
-    // run the staetment.
+    // run the statement.
     _this.runStatementInTransaction(transaction, statement, params, function (err, resultSet) {
       if (err) {
         transaction.rollback(function (e) {
@@ -280,6 +280,16 @@ exports.runStatement = function(statement, params, callback, multipleResultSets)
       }
     }, multipleResultSets);
   });
+};
+
+/**
+ * Runs a bulk insert statement.
+ * @param statement - The insert statement.
+ * @param params - The values. Ex: [[values], [values]]
+ * @param callback - The finished callback function. callback(err);
+ */
+exports.runBulkInsert = function (statement, params, callback) {
+  return callback(new Error('Bulk insert not supported for mssql adapter.'));
 };
 
 /**
