@@ -220,7 +220,7 @@ exports.runBulkInsert = function (statement, params, callback) {
     }
 
     // fire the query.
-    connection.query(statement, params, function (err, results) {
+    connection.query(statement, [params], function (err, results) {
       // release the connection back to the pool.
       connection.release();
 
