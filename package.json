@@ -8,7 +8,7 @@
   "dependencies": {
     "async": "2.5.0",
     "connect-mssql": "1.5.0",
-    "connect-mysql": "2.1.1",
+    "connect-mysql": "2.2.1",
     "connect-pg-simple": "4.2.1",
     "dh-node-utilities": "0.3.0",
     "express": "4.15.4",
