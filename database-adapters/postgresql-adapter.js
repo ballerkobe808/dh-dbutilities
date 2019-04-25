@@ -1,13 +1,13 @@
 'use strict';
 
 // dependencies
-var pg = require('pg');
-var pgTransaction = require('pg-transact');
-var stringUtilities = require('dh-node-utilities').StringUtils;
+const pg = require('pg');
+const pgTransaction = require('pg-transact');
+const stringUtilities = require('dh-node-utilities').StringUtils;
 
 // save the configuration object.
-var config = null;
-var connectionString = null;
+let config = null;
+let connectionString = null;
 
 //======================================================================================
 // Initialization and Destruction Functions.
@@ -47,11 +47,11 @@ exports.getSessionStore = function(callback) {
   }
 
   // dependencies.
-  var expressSession = require('express-session');
-  var PGSessionStore = require('connect-pg-simple')(expressSession);
+  let expressSession = require('express-session');
+  let PGSessionStore = require('connect-pg-simple')(expressSession);
 
   // build the options object.
-  var options = {
+  let options = {
     pg: pg,
     conString: connectionString,
     tableName: config.sessionTableName
@@ -126,7 +126,7 @@ exports.runQuery = function (sqlString, params, callback, multipleResultSets) {
   }
 
   // replace all the ? placeholders with the postgres style placeholders.
-  var query = replacePlaceHolders(sqlString);
+  let query = replacePlaceHolders(sqlString);
 
   // get a connection from the connection pool.
   pg.connect(connectionString, function (err, client, done) {
@@ -172,7 +172,7 @@ exports.runStatement = function (statement, params, callback, multipleResultSets
   }
 
   // replace all the ? placeholders with the postgres style placeholders.
-  var query = replacePlaceHolders(statement);
+  let query = replacePlaceHolders(statement);
 
   // get a connection from the connection pool.
   pg.connect(connectionString, function (err, client, done) {
@@ -229,7 +229,7 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
   }
 
   // replace all the ? placeholders with the postgres style placeholders.
-  var query = replacePlaceHolders(statement, idField);
+  let query = replacePlaceHolders(statement, idField);
 
   // add the returning id field.
   query = addReturningID(query);
@@ -274,7 +274,7 @@ exports.runStatementInTransaction = function (client, statement, params, callbac
   }
 
   // replace all the ? placeholders with the postgres style placeholders.
-  var query = replacePlaceHolders(statement);
+  let query = replacePlaceHolders(statement);
 
   // execute the query.
   client.query(query, params, function (err, result) {
@@ -304,7 +304,7 @@ exports.runStatementInTransactionReturnResult = function (client, statement, par
   }
 
   // replace all the ? placeholders with the postgres style placeholders.
-  var query = replacePlaceHolders(statement);
+  let query = replacePlaceHolders(statement);
 
   // add the returning id field.
   query = addReturningID(query, idField);
@@ -334,7 +334,7 @@ exports.executeStoredProcedure = function (sql, params, callback) {
   }
 
   // replace the work call with select since postgres uses select instead.
-  var statement = replaceCall(sql);
+  let statement = replaceCall(sql);
   statement = replacePlaceHolders(statement);
 
   // get a connection from the connection pool.
@@ -412,10 +412,10 @@ function driverInitialized () {
  */
 function replacePlaceHolders(str){
   // set the indexAt to -1 for not found.
-  var i = -1;
+  let i = -1;
 
   // set index to 1 since that's what postgres starts with on placeholders.
-  var index = 1;
+  let index = 1;
 
   // loop until all ? are found.
   while((i=str.indexOf('?',i+1)) >= 0) {
@@ -435,7 +435,7 @@ function replacePlaceHolders(str){
  * @param statement - The string statement.
  */
 function replaceCall (statement) {
-  var regex = new RegExp('call', "ig");
+  let regex = new RegExp('call', "ig");
   return statement.replace(regex, 'SELECT');
 }
 

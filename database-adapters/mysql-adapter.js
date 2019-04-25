@@ -1,12 +1,12 @@
 'use strict';
 
 // dependencies.
-var mysql = require('mysql');
-var pool = null;
-var _ = require('underscore');
+const mysql = require('mysql');
+const _ = require('underscore');
 
 // save the db options.
-var dbOptions = null;
+let dbOptions = null;
+let pool = null;
 
 //======================================================================================
 // Initialization and Destruction Functions.
@@ -24,7 +24,7 @@ exports.configure = function (options, callback) {
   }
 
   // build the mysql specific connection pool options.
-  var config = {
+  let config = {
     host: options.server,
     port: options.port,
     user: options.username,
@@ -74,11 +74,11 @@ exports.getSessionStore = function(callback) {
   }
 
   // setup the session store.
-  var expressSession = require('express-session');
-  var MySQLStore = require('connect-mysql')(expressSession);
+  let expressSession = require('express-session');
+  let MySQLStore = require('connect-mysql')(expressSession);
 
   // build the config options.
-  var config = {
+  let config = {
     pool: pool,
     table: (dbOptions.sessionTableName) ? dbOptions.sessionTableName : 'session',
     secret: (dbOptions.sessionSecret) ? dbOptions.sessionSecret : 'SECRETSTRINGSHHH'
@@ -198,7 +198,7 @@ exports.runStatement = function (statement, params, callback) {
 
 /**
  * Runs a bulk insert statement.
- * @param statement - The insert statement. 
+ * @param statement - The insert statement.
  * @param params - The values. Ex: [[values], [values]]
  * @param callback - The finished callback function. callback(err);
  */
@@ -248,7 +248,6 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
  * @param connection - The sql connection.
  * @param statement - The sql statement string with question mark placeholders.
  * @param params - An array of parameters.
- * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
  */
 exports.runStatementInTransaction = function (connection, statement, params, callback) {

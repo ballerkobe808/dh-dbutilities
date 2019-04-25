@@ -27,7 +27,7 @@
     "url": "git://github.com/uranakam/dh-dbutilities.git"
   },
   "engines": {
-    "node": ">= 0.10"
+    "node": ">= 8.11"
   },
   "readmeFilename": "README.md",
   "license": "(MIT OR Apache-2.0)"

@@ -1,15 +1,14 @@
 'use strict';
 
 // dependencies
-var sql = require('mssql');
-var poolInitialized = false;
-var _ = require('underscore');
-var stringUtilities = require('dh-node-utilities').StringUtils;
-var async = require('async');
+const sql = require('mssql');
+const _ = require('underscore');
+const stringUtilities = require('dh-node-utilities').StringUtils;
 
 // save the db options.
-var dbOptions = null
-var dbConfig = null;
+let dbOptions = null;
+let dbConfig = null;
+let poolInitialized = false;
 
 //======================================================================================
 // Initialization and Destruction Functions.
@@ -27,7 +26,7 @@ exports.configure = function (options, callback) {
   }
 
   // build the mysql specific connection pool options.
-  var config = {
+  let config = {
     user: options.username,
     password: options.password,
     database: options.dbName,
@@ -91,16 +90,16 @@ exports.getSessionStore = function(callback) {
   }
 
   // setup the session store.
-  var session = require('express-session');
-  var MSSQLStore = require('connect-mssql')(session);
+  let session = require('express-session');
+  let MSSQLStore = require('connect-mssql')(session);
 
   // build the config options.
-  var options = {
+  let options = {
     table: (dbOptions.sessionTableName) ? dbOptions.sessionTableName : 'sessions',
   };
 
   // build the mysql specific connection pool options.
-  var config = {
+  let config = {
     user: dbOptions.username,
     password: dbOptions.password,
     database: dbOptions.sessionDatabaseName,
@@ -144,7 +143,7 @@ exports.runStringQuery = function(sqlString, callback, multipleResultSets) {
   }
 
   // build the request object.
-  var request = new sql.Request();
+  let request = new sql.Request();
 
   // set the multiple flag.
   if (multipleResultSets) {
@@ -171,7 +170,7 @@ exports.runStringQueryInTransaction = function(transaction, sqlString, callback,
   }
 
   // build the request object.
-  var request = new sql.Request(transaction);
+  let request = new sql.Request(transaction);
 
   // set the multiple flag.
   if (multipleResultSets) {
@@ -198,8 +197,8 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
   }
 
   // build the prepared statement object.
-  var ps = new sql.PreparedStatement();
-  var query = null;
+  let ps = new sql.PreparedStatement();
+  let query = null;
 
   // set the multiple flag.
   if (multipleResultSets) {
@@ -223,17 +222,17 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
 
     // execute the statement.
     ps.execute(query.values, function (er, resultSet) {
-      // unprepare the staetment.
+      // un-prepare the statement.
       ps.unprepare(function(e) {
         if (e) {
-          console.log(new Error('Failed to unprepare a prepared statement.'));
+          console.log(new Error('Failed to un-prepare a prepared statement.'));
         }
 
         return callback(err, resultSet);
       });
     });
   });
-}
+};
 
 /**
  * Runs an update statement.
@@ -244,7 +243,7 @@ exports.runQuery = function (queryString, params, callback, multipleResultSets) 
  */
 exports.runStatement = function(statement, params, callback, multipleResultSets) {
   // save a reference.
-  var _this = this;
+  let _this = this;
 
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
@@ -252,7 +251,7 @@ exports.runStatement = function(statement, params, callback, multipleResultSets)
   }
 
   // create a transaction connection object.
-  var transaction = new sql.Transaction();
+  let transaction = new sql.Transaction();
 
   // begin the transaction.
   transaction.begin(function (err) {
@@ -299,7 +298,6 @@ exports.runBulkInsert = function (statement, params, callback) {
  * @param params - An array of parameters.
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
- * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
 exports.runStatementReturnResult = function(statement, params, idField, callback) {
   this.runStatement(statement, params, callback);
@@ -315,17 +313,14 @@ exports.runStatementReturnResult = function(statement, params, idField, callback
  * @param multipleResultSets - Flag indicating if multiple result sets should be returned.
  */
 exports.runStatementInTransaction = function(connection, statement, params, callback, multipleResultSets) {
-  // save a reference.
-  var _this = this;
-
   // make sure the connection pool was initialized.
   if (!poolInitialized) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // build the prepared statement object.
-  var ps = new sql.PreparedStatement(connection);
-  var query = null;
+  let ps = new sql.PreparedStatement(connection);
+  let query = null;
 
   // set the multiple flag.
   if (multipleResultSets) {
@@ -349,10 +344,10 @@ exports.runStatementInTransaction = function(connection, statement, params, call
 
     // execute the statement.
     ps.execute(query.values, function (er, resultSet) {
-      // unprepare the staetment.
+      // un-prepare the statement.
       ps.unprepare(function(e) {
         if (e) {
-          console.log(new Error('Failed to unprepare a prepared statement.'));
+          console.log(new Error('Failed to un-prepare a prepared statement.'));
         }
 
         return callback(er, resultSet);
@@ -395,7 +390,7 @@ exports.executeStoredProcedure = function(procedureName, params, callback, multi
   }
 
   // build the request object.
-  var request = new sql.Request();
+  let request = new sql.Request();
 
   // set the multiple flag.
   if (multipleResultSets) {
@@ -403,12 +398,12 @@ exports.executeStoredProcedure = function(procedureName, params, callback, multi
   }
 
   // holds the names of the output params.
-  var outputParams = [];
+  let outputParams = [];
 
   // add the parameters to the call.
-  for (var i = 0; i < params.length; i++) {
-    var currentParam = params[i];
-    if (currentParam.paramType.toLowerCase() == 'input') {
+  for (let i = 0; i < params.length; i++) {
+    let currentParam = params[i];
+    if (currentParam.paramType.toLowerCase() === 'input') {
       request.input(currentParam.name, currentParam.dataType, currentParam.value);
     }
     else {
@@ -424,13 +419,13 @@ exports.executeStoredProcedure = function(procedureName, params, callback, multi
     }
 
     // get the output values if there are any.
-    var outputValues = {};
+    let outputValues = {};
 
     // if there are output params. get the values.
     if (outputParams.length > 0) {
 
       // get the output values.
-      for (var i = 0; i < outputParams.length; i++) {
+      for (let i = 0; i < outputParams.length; i++) {
         // make sure the value is set.
         if (request.parameters[outputParams[i]]) {
           outputValues[outputParams[i]] = request.parameters[outputParams[i]].value;
@@ -454,7 +449,7 @@ exports.runTransaction = function(executeFunction, callback) {
   }
 
   // create a transaction connection object.
-  var transaction = new sql.Transaction();
+  let transaction = new sql.Transaction();
 
   // begin the transaction.
   transaction.begin(function (err) {
@@ -490,27 +485,27 @@ exports.runTransaction = function(executeFunction, callback) {
 
 /**
  * Converts the standard query the ? placeholders and params array to query with param
- * placehodlers and an object.
+ * place hodlers and an object.
  * @param query - The string query.
  * @param params - The params array.
  * @param ps - The prepared statement object.
  */
 function convertQueryAndParamsForMSSql(query, params, ps) {
   // initialize the object.
-  var result = {
+  let result = {
     sql: '',
     values: {}
   };
 
   // used to generate the parameter place holders.
-  var paramString = 'param';
-  var index = 0;
-  var i = 0;
+  let paramString = 'param';
+  let index = 0;
+  let i = 0;
 
   // loop until all ? are found.
   while((i=query.indexOf('?', i+1)) >= 0) {
     // build the param name.
-    var paramName = paramString + index.toString();
+    let paramName = paramString + index.toString();
 
     // replace the question mark with $ + index.
     query = query.substr(0, i) + '@' + paramName + query.substr(i + 1);
@@ -571,11 +566,11 @@ function isInt(n){
  */
 function isObjectParams(paramsArray) {
   // default result to false;
-  var result = false;
+  let result = false;
 
   // check if the params array is empty or not.
   if (paramsArray && paramsArray.length > 0) {
-    for (var i = 0; i < paramsArray.length; i++) {
+    for (let i = 0; i < paramsArray.length; i++) {
       if (_.isObject(paramsArray[i]) && !stringUtilities.isEmpty(paramsArray[i].type)) {
         result = true;
         break;
@@ -595,13 +590,13 @@ function isObjectParams(paramsArray) {
  */
 function convertParamsObjectArrayToQueryObject(sql, params, ps) {
   // build the result object.
-  var result = {
+  let result = {
     sql: sql,
     values: {}
   };
 
   // add the input parameters.
-  for (var i = 0; i < params.length; i++) {
+  for (let i = 0; i < params.length; i++) {
     ps.input(params[i].name, params[i].type);
     result.values[params[i].name] = params[i].value;
   }
