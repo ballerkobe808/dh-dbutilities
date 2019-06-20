@@ -81,7 +81,8 @@ exports.getSessionStore = function(callback) {
   let config = {
     pool: pool,
     table: (dbOptions.sessionTableName) ? dbOptions.sessionTableName : 'session',
-    secret: (dbOptions.sessionSecret) ? dbOptions.sessionSecret : 'SECRETSTRINGSHHH'
+    secret: (dbOptions.sessionSecret) ? dbOptions.sessionSecret : 'SECRETSTRINGSHHH',
+    cleanup: (dbOptions.cleanup) ? dbOptions.cleanup : false
   };
 
   // return a new instance of the MySQL session store.
