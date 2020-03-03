@@ -211,7 +211,7 @@ exports.runBulkInsert = (statement, params, callback) => {
   }
 
   // get a connection from the connection pool.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -352,7 +352,7 @@ exports.runTransaction = (executeFunction, callback) => {
         // check if an error occurred.
         if (err) {
           // rollback any changes in the event of an error.
-          connection.rollback(function () {
+          connection.rollback(() => {
             connection.release();
             return callback(err);
           });
