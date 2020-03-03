@@ -2,8 +2,8 @@
 
 // dependencies
 const sql = require('mssql');
-const _ = require('underscore');
-const stringUtilities = require('dh-node-utilities').StringUtils;
+const _ = require('lodash');
+const { StringUtils } = require('dh-node-utilities');
 
 // save the db options.
 let dbOptions = null;
@@ -39,7 +39,7 @@ exports.configure = function (options, callback) {
   };
 
   // set both host and port if
-  if (stringUtilities.isEmpty(options.instanceName)) {
+  if (StringUtils.isEmpty(options.instanceName)) {
     config.server = options.server;
     config.port = options.port;
   }
@@ -91,7 +91,7 @@ exports.getSessionStore = function(callback) {
 
   // setup the session store.
   let session = require('express-session');
-  let MSSQLStore = require('connect-mssql')(session);
+  let MSSQLStore = require('connect-mssql-v2')(session);
 
   // build the config options.
   let options = {
@@ -112,7 +112,7 @@ exports.getSessionStore = function(callback) {
   };
 
   // set both host and port if
-  if (stringUtilities.isEmpty(dbOptions.instanceName)) {
+  if (StringUtils.isEmpty(dbOptions.instanceName)) {
     config.server = dbOptions.server;
     config.port = dbOptions.port;
   }
@@ -571,7 +571,7 @@ function isObjectParams(paramsArray) {
   // check if the params array is empty or not.
   if (paramsArray && paramsArray.length > 0) {
     for (let i = 0; i < paramsArray.length; i++) {
-      if (_.isObject(paramsArray[i]) && !stringUtilities.isEmpty(paramsArray[i].type)) {
+      if (_.isObject(paramsArray[i]) && !StringUtils.isEmpty(paramsArray[i].type)) {
         result = true;
         break;
       }

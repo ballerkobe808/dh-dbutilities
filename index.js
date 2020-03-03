@@ -1,26 +1,28 @@
 'use strict';
 
 // dependencies.
-var constants = require('./constants/constants');
+const _ = require('lodash');
+const validator = require('validator');
+const async = require('async');
+const { StringUtils } = require('dh-node-utilities');
+
+// Adapter names.
+const constants = require('./constants/constants');
 exports.constants = constants;
-var _ = require('underscore');
-var validator = require('validator');
-var async = require('async');
-var stringUtilities = require('dh-node-utilities').StringUtils;
 
 // MSSQL specific
-var sql = require('mssql');
+const sql = require('mssql');
 exports.TYPES = sql.TYPES;
 
 // current adapter to use.
-var currentAdapterName = null;
-var currentAdapter = null;
+let currentAdapterName = null;
+let currentAdapter = null;
 
 // flag indicating if the module was configured or not yet.
-var isConfigured = false;
+let isConfigured = false;
 
 // reference to the db options.
-var dbOptions = null;
+let dbOptions = null;
 
 //======================================================================================
 // Initialization and Destruction Functions.
@@ -172,8 +174,8 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
     }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
-        var newRowId = results[0][idField];
-        var newResult = {
+        let newRowId = results[0][idField];
+        let newResult = {
           resultSet: results,
           newRowId: newRowId
         }
@@ -225,8 +227,8 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
     }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
-        var newRowId = results[0][idField];
-        var newResult = {
+        let newRowId = results[0][idField];
+        let newResult = {
           resultSet: results,
           newRowId: newRowId
         }
@@ -273,9 +275,9 @@ exports.runTransaction = function (executeFunction, callback) {
  * }
  */
 exports.createSelectFields = function(tableName, mappings) {
-  var selectClause = '';
+  let selectClause = '';
 
-  for (var i = 0; i < mappings.length; i++) {
+  for (let i = 0; i < mappings.length; i++) {
     if (i != 0) {
       selectClause += ', ';
     }
@@ -296,18 +298,18 @@ exports.createSelectFields = function(tableName, mappings) {
  * @param parameters - An object of key value pairs.
  */
 exports.generateInsertObject = function (tableName, parameters) {
-  var sql = 'INSERT INTO ' + tableName;
+  let sql = 'INSERT INTO ' + tableName;
 
   // build the parameter lists.
-  var columnNamesString = '';
-  var valuePlaceHolders = '';
-  var paramsArray = [];
+  let columnNamesString = '';
+  let valuePlaceHolders = '';
+  let paramsArray = [];
 
   // keep track of the current index.
-  var index = 0;
+  let index = 0;
 
   // loop over all the keys.
-  for (var key in parameters) {
+  for (let key in parameters) {
     if (parameters.hasOwnProperty(key) && parameters[key] != undefined) {
       // if its not the last parameter, add a comma.
       if (index != 0) {
@@ -342,12 +344,12 @@ exports.generateInsertObject = function (tableName, parameters) {
  * @param conditionParams - The array of parameters that match the conditions place markers.
  */
 exports.generateUpdateObject = function (tableName, parameters, conditions, conditionParams) {
-  var sql = 'UPDATE ' + tableName + ' SET ';
-  var paramsArray = [];
+  let sql = 'UPDATE ' + tableName + ' SET ';
+  let paramsArray = [];
 
-  var index = 0;
+  let index = 0;
 
-  for (var key in parameters) {
+  for (let key in parameters) {
     if (parameters.hasOwnProperty(key)) {
       if (index != 0) {
         sql += ', ';
@@ -366,7 +368,7 @@ exports.generateUpdateObject = function (tableName, parameters, conditions, cond
   sql += 'WHERE ' + conditions;
 
   // add the condition parameters part.
-  for (var i = 0; i < conditionParams.length; i++) {
+  for (let i = 0; i < conditionParams.length; i++) {
     paramsArray.push(conditionParams[i]);
   }
 
@@ -381,9 +383,9 @@ exports.generateUpdateObject = function (tableName, parameters, conditions, cond
  * @param value - the value to convert.
  */
 exports.booleanValue = function(value) {
-  var result = false;
+  let result = false;
   try {
-    if (!stringUtilities.isEmpty(value)) {
+    if (!StringUtils.isEmpty(value)) {
       if (Buffer.isBuffer(value)) {
         result = validator.toBoolean(value[0].toString());
       }
@@ -412,7 +414,7 @@ exports.groupRows = function (groupByField, rows, callback) {
   //   <groupByFied>: 1,
   //   rows: []
   // }
-  var rawRowList = [];
+  let rawRowList = [];
 
   try {
     // iterate over all the rows and split them into their group objects.
@@ -420,11 +422,11 @@ exports.groupRows = function (groupByField, rows, callback) {
       // item processor.
       function (row, cb) {
         // get the user id field.
-        var groupByFieldValue = row[groupByField];
+        let groupByFieldValue = row[groupByField];
 
-        var props = {};
+        let props = {};
         props[groupByField] = groupByFieldValue;
-        var foundObject = _.findWhere(rawRowList, props);
+        let foundObject = _.findWhere(rawRowList, props);
 
         if (!foundObject) {
           foundObject = {};
@@ -459,17 +461,17 @@ exports.groupRows = function (groupByField, rows, callback) {
  * @returns {string}
  */
 exports.queryToString = function (sql, params, timezone) {
-  var final = '';
-  var paramsIndex = 0;
+  let final = '';
+  let paramsIndex = 0;
 
-  for (var i = 0; i < sql.length; i++) {
+  for (let i = 0; i < sql.length; i++) {
     if (sql.charAt(i) == '?') {
       if (typeof params[paramsIndex] == 'string') {
         if (params[paramsIndex].lastIndexOf('[@]', 0) === 0) {
-          final += stringUtilities.replaceAll(params[paramsIndex], '[@]', '@');
+          final += StringUtils.replaceAll(params[paramsIndex], '[@]', '@');
         }
         else {
-          final += "'" + stringUtilities.replaceAll(params[paramsIndex], "'", "\\'") + "'";
+          final += "'" + StringUtils.replaceAll(params[paramsIndex], "'", "\\'") + "'";
         }
       }
       else if (Object.prototype.toString.call(params[paramsIndex]) === '[object Date]') {
@@ -501,12 +503,12 @@ exports.joinResultSets = function(results) {
 
   // if the results is an array of result sets.
   if (results[0] && _.isArray(results[0])) {
-    var newResults = [];
+    let newResults = [];
 
-    for (var i = 0; i < results.length; i++) {
-      var rs = results[i];
+    for (let i = 0; i < results.length; i++) {
+      let rs = results[i];
 
-      for (var j =0; j < rs.length; j++) {
+      for (let j =0; j < rs.length; j++) {
         newResults.push(rs[j]);
       }
     }
@@ -518,10 +520,10 @@ exports.joinResultSets = function(results) {
 }
 
 function dateToString(date, timeZone) {
-  var dt = new Date(date);
+  let dt = new Date(date);
 
   if (timeZone && timeZone != 'local') {
-    var tz = convertTimezone(timeZone);
+    let tz = convertTimezone(timeZone);
 
     dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
     if (tz !== false) {
@@ -529,13 +531,13 @@ function dateToString(date, timeZone) {
     }
   }
 
-  var year   = dt.getFullYear();
-  var month  = zeroPad(dt.getMonth() + 1, 2);
-  var day    = zeroPad(dt.getDate(), 2);
-  var hour   = zeroPad(dt.getHours(), 2);
-  var minute = zeroPad(dt.getMinutes(), 2);
-  var second = zeroPad(dt.getSeconds(), 2);
-  var millisecond = zeroPad(dt.getMilliseconds(), 3);
+  let year   = dt.getFullYear();
+  let month  = zeroPad(dt.getMonth() + 1, 2);
+  let day    = zeroPad(dt.getDate(), 2);
+  let hour   = zeroPad(dt.getHours(), 2);
+  let minute = zeroPad(dt.getMinutes(), 2);
+  let second = zeroPad(dt.getSeconds(), 2);
+  let millisecond = zeroPad(dt.getMilliseconds(), 3);
 
   return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
 };
@@ -552,7 +554,7 @@ function zeroPad(number, length) {
 function convertTimezone(tz) {
   if (tz == "Z") return 0;
 
-  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+  let m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
   if (m) {
     return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
   }
