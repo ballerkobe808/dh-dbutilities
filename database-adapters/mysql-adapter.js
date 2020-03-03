@@ -2,7 +2,7 @@
 
 // dependencies.
 const mysql = require('mysql');
-const _ = require('underscore');
+const _ = require('lodash');
 
 // save the db options.
 let dbOptions = null;
@@ -17,9 +17,9 @@ let pool = null;
  * @param options - The configuration options object from the config module.
  * @param callback - The finished callback function.
  */
-exports.configure = function (options, callback) {
+exports.configure = (options, callback) => {
   // if the pool is already configured, just fire the finished callback.
-  if (poolInitialized()) {
+  if (pool) {
     return callback();
   }
 
@@ -50,15 +50,16 @@ exports.configure = function (options, callback) {
 
 /**
  * Performs the de-allocation/pool destruction code when application is exiting.
+ * @param callback - The finished callback function.
  */
-exports.close = function (callback) {
+exports.close = (callback) => {
   // if the pool wasn't created yet. Just fire the callback.
   if (!pool) {
     return callback();
   }
 
   // destroy the pool.
-  pool.end(function (err) {
+  pool.end((err) => {
     return callback(err);
   });
 };
@@ -67,9 +68,9 @@ exports.close = function (callback) {
  * Gets the mysql session store object for express.
  * @param callback - The finished callback function.
  */
-exports.getSessionStore = function(callback) {
+exports.getSessionStore = (callback) => {
   // make sure the module has been configured first.
-  if (!poolInitialized()) {
+  if (!pool) {
     return callback(new Error('DB connection pool not initialized.'));
   }
 
@@ -99,14 +100,14 @@ exports.getSessionStore = function(callback) {
  * @param callback - The finished callback function. callback(err, rows);
  * @returns {*}
  */
-exports.runStringQuery = function (sqlQuery, callback) {
+exports.runStringQuery = (sqlQuery, callback) => {
   // make sure the pool is initialized first.
-  if (!poolInitialized()) {
+  if (!pool) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // get a pooled connection.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -117,7 +118,7 @@ exports.runStringQuery = function (sqlQuery, callback) {
     }
 
     // fire the query.
-    connection.query(sqlQuery, function (err, rows) {
+    connection.query(sqlQuery, (err, rows) => {
       // release the connection back to the pool.
       connection.release();
 
@@ -133,14 +134,14 @@ exports.runStringQuery = function (sqlQuery, callback) {
  * @param params - The array parameters to be added to the sql query.
  * @param callback - The finished callback function. callback(err, rows);
  */
-exports.runQuery = function (sqlString, params, callback) {
+exports.runQuery = (sqlString, params, callback) => {
   // make sure the pool is initialized.
-  if (!poolInitialized()) {
+  if (!pool) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // get a connection from the connection pool.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -152,7 +153,7 @@ exports.runQuery = function (sqlString, params, callback) {
 
 
     // fire the query.
-    connection.query(sqlString, params, function (err, rows) {
+    connection.query(sqlString, params, (err, rows) => {
       // release the connection back to the pool.
       connection.release();
 
@@ -169,14 +170,14 @@ exports.runQuery = function (sqlString, params, callback) {
  * @param params - An array of parameters.
  * @param callback - The finished callback function. callback(err, results);
  */
-exports.runStatement = function (statement, params, callback) {
+exports.runStatement = (statement, params, callback) => {
   // make sure the pool is initialized.
-  if (!poolInitialized()) {
+  if (!pool) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // get a connection from the connection pool.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -187,7 +188,7 @@ exports.runStatement = function (statement, params, callback) {
     }
 
     // fire the query.
-    connection.query(statement, params, function (err, results) {
+    connection.query(statement, params, (err, results) => {
       // release the connection back to the pool.
       connection.release();
 
@@ -203,14 +204,14 @@ exports.runStatement = function (statement, params, callback) {
  * @param params - The values. Ex: [[values], [values]]
  * @param callback - The finished callback function. callback(err);
  */
-exports.runBulkInsert = function (statement, params, callback) {
+exports.runBulkInsert = (statement, params, callback) => {
   // make sure the pool is initialized.
-  if (!poolInitialized()) {
+  if (!pool) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // get a connection from the connection pool.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -221,7 +222,7 @@ exports.runBulkInsert = function (statement, params, callback) {
     }
 
     // fire the query.
-    connection.query(statement, [params], function (err, results) {
+    connection.query(statement, [params], (err, results) => {
       // release the connection back to the pool.
       connection.release();
 
@@ -239,7 +240,7 @@ exports.runBulkInsert = function (statement, params, callback) {
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
  */
-exports.runStatementReturnResult = function (statement, params, idField, callback) {
+exports.runStatementReturnResult = (statement, params, idField, callback) => {
   this.runStatement(statement, params, callback);
 };
 
@@ -251,14 +252,14 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
  * @param params - An array of parameters.
  * @param callback - The finished callback function. callback(err, results);
  */
-exports.runStatementInTransaction = function (connection, statement, params, callback) {
+exports.runStatementInTransaction = (connection, statement, params, callback) => {
   // make sure the pool is initialized.
-  if (!poolInitialized()) {
+  if (!pool) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // fire the query.
-  connection.query(statement, params, function (err, results) {
+  connection.query(statement, params, (err, results) => {
     // return the results.
     return callback(err, results);
   });
@@ -273,7 +274,7 @@ exports.runStatementInTransaction = function (connection, statement, params, cal
  * @param idField - The field name of the ID field.
  * @param callback - The finished callback function. callback(err, results);
  */
-exports.runStatementInTransactionReturnResult = function (connection, statement, params, idField, callback) {
+exports.runStatementInTransactionReturnResult = (connection, statement, params, idField, callback) => {
   this.runStatementInTransaction(connection, statement, params, callback);
 };
 
@@ -283,13 +284,13 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
  * @param params - Array of parameters needed by the call.
  * @param callback - The finished callback function.
  */
-exports.executeStoredProcedure = function (sql, params, callback) {
-  if (!poolInitialized()) {
+exports.executeStoredProcedure = (sql, params, callback) => {
+  if (!pool) {
     return callback(new Error('Connection pool not initialized.'));
   }
 
   // get a connection from the connection pool.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -300,7 +301,7 @@ exports.executeStoredProcedure = function (sql, params, callback) {
     }
 
     // run the procedure.
-    connection.query(sql, params, function (err, results) {
+    connection.query(sql, params, (err, results) => {
       // release the connection back to the pool.
       connection.release();
 
@@ -325,9 +326,9 @@ exports.executeStoredProcedure = function (sql, params, callback) {
  * @param executeFunction - The function to be executed containing the statements to run. Should take in a callback function.
  * @param callback - The finished callback function.
  */
-exports.runTransaction = function (executeFunction, callback) {
+exports.runTransaction = (executeFunction, callback) => {
   // get a connection from the connection pool.
-  pool.getConnection(function (err, connection) {
+  pool.getConnection((err, connection) => {
     // check if an error occurred.
     if (err) {
       // release the connection.
@@ -339,7 +340,7 @@ exports.runTransaction = function (executeFunction, callback) {
     }
 
     // begin a transaction.
-    connection.beginTransaction(function (err) {
+    connection.beginTransaction((err) => {
       // check if an error occurred creating a transaction.
       if (err) {
         connection.release();
@@ -347,19 +348,19 @@ exports.runTransaction = function (executeFunction, callback) {
       }
 
       // execute the function.
-      executeFunction(connection, function (err) {
+      executeFunction(connection, (err) => {
         // check if an error occurred.
         if (err) {
           // rollback any changes in the event of an error.
-          connection.rollback(function () {
+          connection.rollback(() => {
             connection.release();
             return callback(err);
           });
         }
         else {
-          connection.commit(function(err) {
+          connection.commit((err) => {
             if (err) {
-              connection.rollback(function () {
+              connection.rollback(() => {
                 connection.release();
                 return callback(err);
               });
@@ -374,15 +375,3 @@ exports.runTransaction = function (executeFunction, callback) {
     });
   });
 };
-
-//======================================================================================
-// Private Functions.
-//======================================================================================
-
-/**
- * Checks if the pool is initialized or not.
- * @returns {boolean}
- */
-function poolInitialized () {
-  return (pool != null);
-}

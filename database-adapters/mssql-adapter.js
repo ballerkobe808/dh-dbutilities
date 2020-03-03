@@ -2,8 +2,7 @@
 
 // dependencies
 const sql = require('mssql');
-const _ = require('underscore');
-const stringUtilities = require('dh-node-utilities').StringUtils;
+const _ = require('lodash');
 
 // save the db options.
 let dbOptions = null;
@@ -30,24 +29,16 @@ exports.configure = function (options, callback) {
     user: options.username,
     password: options.password,
     database: options.dbName,
+    server: dbOptions.server,
+    port: dbOptions.port,
     pool: {
       max: options.connectionPoolLimit
     },
     options: {
+      instanceName: options.instanceName,
       abortTransactionOnError: true
     }
   };
-
-  // set both host and port if
-  if (stringUtilities.isEmpty(options.instanceName)) {
-    config.server = options.server;
-    config.port = options.port;
-  }
-  else {
-    config.server = options.server;
-    config.port = options.port;
-    config.options.instanceName = options.instanceName;
-  }
 
   // save the options.
   dbOptions = options;
@@ -91,7 +82,7 @@ exports.getSessionStore = function(callback) {
 
   // setup the session store.
   let session = require('express-session');
-  let MSSQLStore = require('connect-mssql')(session);
+  let MSSQLStore = require('connect-mssql-v2')(session);
 
   // build the config options.
   let options = {
@@ -103,24 +94,16 @@ exports.getSessionStore = function(callback) {
     user: dbOptions.username,
     password: dbOptions.password,
     database: dbOptions.sessionDatabaseName,
+    server: dbOptions.server,
+    port: dbOptions.port,
     pool: {
       max: dbOptions.connectionPoolLimit
     },
     options: {
+      instanceName: dbOptions.instanceName,
       abortTransactionOnError: true
     }
   };
-
-  // set both host and port if
-  if (stringUtilities.isEmpty(dbOptions.instanceName)) {
-    config.server = dbOptions.server;
-    config.port = dbOptions.port;
-  }
-  else {
-    config.server = dbOptions.server;
-    config.port = dbOptions.port;
-    config.options.instanceName = dbOptions.instanceName;
-  }
 
   // return a new instance of the MySQL session store.
   return callback(null, new MSSQLStore(config, options));
@@ -485,7 +468,7 @@ exports.runTransaction = function(executeFunction, callback) {
 
 /**
  * Converts the standard query the ? placeholders and params array to query with param
- * place hodlers and an object.
+ * place holders and an object.
  * @param query - The string query.
  * @param params - The params array.
  * @param ps - The prepared statement object.
@@ -571,7 +554,7 @@ function isObjectParams(paramsArray) {
   // check if the params array is empty or not.
   if (paramsArray && paramsArray.length > 0) {
     for (let i = 0; i < paramsArray.length; i++) {
-      if (_.isObject(paramsArray[i]) && !stringUtilities.isEmpty(paramsArray[i].type)) {
+      if (_.isObject(paramsArray[i]) && !_.isEmpty(paramsArray[i].type)) {
         result = true;
         break;
       }

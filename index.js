@@ -1,26 +1,27 @@
 'use strict';
 
 // dependencies.
-var constants = require('./constants/constants');
+const _ = require('lodash');
+const validator = require('validator');
+const StringUtils  = require('./utilities/string-utilities');
+
+// Adapter names.
+const constants = require('./constants/constants');
 exports.constants = constants;
-var _ = require('underscore');
-var validator = require('validator');
-var async = require('async');
-var stringUtilities = require('dh-node-utilities').StringUtils;
 
 // MSSQL specific
-var sql = require('mssql');
+const sql = require('mssql');
 exports.TYPES = sql.TYPES;
 
 // current adapter to use.
-var currentAdapterName = null;
-var currentAdapter = null;
+let currentAdapterName = null;
+let currentAdapter = null;
 
 // flag indicating if the module was configured or not yet.
-var isConfigured = false;
+let isConfigured = false;
 
 // reference to the db options.
-var dbOptions = null;
+let dbOptions = null;
 
 //======================================================================================
 // Initialization and Destruction Functions.
@@ -31,7 +32,7 @@ var dbOptions = null;
  * @param options - The db config options object.
  * @param callback - The finished callback function.
  */
-exports.configure = function (options, callback) {
+exports.configure = (options, callback) => {
   // check if the module was already configured.
   if (isConfigured) {
     return callback();
@@ -52,7 +53,7 @@ exports.configure = function (options, callback) {
   currentAdapter = require('./database-adapters/' + currentAdapterName);
 
   // configure the adapter.
-  currentAdapter.configure(options, function (err) {
+  currentAdapter.configure(options, (err) => {
     // if there was no error, set the isConfigured flag to true.
     if (!err) {
       isConfigured = true;
@@ -67,21 +68,22 @@ exports.configure = function (options, callback) {
  * Getter function for the isConfigured flag.
  * @returns {boolean}
  */
-exports.isConfigured = function () {
+exports.isConfigured = () => {
   return isConfigured;
 };
 
 /**
  * Close all connections to the underlying sql database.
- * @param callback
+ * @param callback - Finished callback function.
  */
-exports.close = function (callback) {
+exports.close = (callback) => {
   // make sure the adapter has been configured.
   if (!isConfigured) {
     return callback(new Error('Module not configured.'));
   }
 
-  currentAdapter.close(function (err) {
+  // close the pool.
+  currentAdapter.close((err) => {
     return callback(err);
   });
 };
@@ -90,7 +92,7 @@ exports.close = function (callback) {
  * Gets the session store object for express.
  * @param callback - The finished callback function.
  */
-exports.getSessionStore = function(callback) {
+exports.getSessionStore = (callback) => {
   // check if the module is configured or not.
   if (!isConfigured) {
     return callback(new Error('Module not configured.'));
@@ -110,7 +112,7 @@ exports.getSessionStore = function(callback) {
  * @param callback - The finished callback function.
  * @param multipleResultSets - Flag indicating if multiple result sets are returned.
  */
-exports.runStringQuery = function (query, callback, multipleResultSets) {
+exports.runStringQuery = (query, callback, multipleResultSets) => {
   currentAdapter.runStringQuery(query, callback, multipleResultSets);
 };
 
@@ -121,7 +123,7 @@ exports.runStringQuery = function (query, callback, multipleResultSets) {
  * @param callback - The finished callback function. callback(err, rows);
  * @param multipleResultSets - Flag indicating if multiple result sets are returned.
  */
-exports.runQuery = function (sqlString, params, callback, multipleResultSets) {
+exports.runQuery = (sqlString, params, callback, multipleResultSets) => {
   currentAdapter.runQuery(sqlString, params, callback, multipleResultSets);
 };
 
@@ -133,7 +135,7 @@ exports.runQuery = function (sqlString, params, callback, multipleResultSets) {
  * @param callback - The finished callback function. callback(err, results);
  * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatement = function (statement, params, callback, multipleResultSets) {
+exports.runStatement = (statement, params, callback, multipleResultSets) => {
   currentAdapter.runStatement(statement, params, callback, multipleResultSets);
 };
 
@@ -143,7 +145,7 @@ exports.runStatement = function (statement, params, callback, multipleResultSets
  * @param params - The values. Ex: [[values], [values]]
  * @param callback - The finished callback function. callback(err);
  */
-exports.runBulkInsert = function (statement, params, callback) {
+exports.runBulkInsert = (statement, params, callback) => {
   currentAdapter.runBulkInsert(statement, params, callback);
 };
 
@@ -156,8 +158,8 @@ exports.runBulkInsert = function (statement, params, callback) {
  * @param callback - The finished callback function. callback(err, results);
  * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatementReturnResult = function (statement, params, idField, callback, multipleResultSets) {
-  currentAdapter.runStatementReturnResult(statement, params, idField, function (err, results) {
+exports.runStatementReturnResult = (statement, params, idField, callback, multipleResultSets) => {
+  currentAdapter.runStatementReturnResult(statement, params, idField, (err, results) => {
     if (err) {
       return callback(err);
     }
@@ -165,19 +167,13 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
     if (_.isEqual(currentAdapterName, constants.MYSQL_ADAPTER)) {
       results.newRowId = results.insertId;
     }
-    else if (_.isEqual(currentAdapterName, constants.POSTGRESQL_ADAPTER)) {
-      if (results.rows && results.rows.length > 0) {
-        results.newRowId = results.rows[0][idField];
-      }
-    }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
-        var newRowId = results[0][idField];
-        var newResult = {
+        let newRowId = results[0][idField];
+        results = {
           resultSet: results,
           newRowId: newRowId
-        }
-        results = newResult;
+        };
       }
     }
 
@@ -194,7 +190,7 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
  * @param callback - The finished callback function. callback(err, results);
  * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatementInTransaction = function (connection, statement, params, callback, multipleResultSets) {
+exports.runStatementInTransaction = (connection, statement, params, callback, multipleResultSets) => {
   currentAdapter.runStatementInTransaction(connection, statement, params, callback, multipleResultSets);
 };
 
@@ -208,8 +204,8 @@ exports.runStatementInTransaction = function (connection, statement, params, cal
  * @param callback - The finished callback function. callback(err, results);
  * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.runStatementInTransactionReturnResult = function (connection, statement, params, idField, callback, multipleResultSets) {
-  currentAdapter.runStatementInTransactionReturnResult(connection, statement, params, idField, function (err, results) {
+exports.runStatementInTransactionReturnResult = (connection, statement, params, idField, callback, multipleResultSets) => {
+  currentAdapter.runStatementInTransactionReturnResult(connection, statement, params, idField, (err, results) => {
     if (err) {
       return callback(err);
     }
@@ -217,20 +213,13 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
     if (_.isEqual(currentAdapterName, constants.MYSQL_ADAPTER)) {
       results.newRowId = results.insertId;
     }
-    else if (_.isEqual(currentAdapterName, constants.POSTGRESQL_ADAPTER)) {
-      if (results.rows && results.rows.length > 0) {
-        console.log(results.rows[0]);
-        results.newRowId = results.rows[0][idField];
-      }
-    }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
-        var newRowId = results[0][idField];
-        var newResult = {
+        let newRowId = results[0][idField];
+        results = {
           resultSet: results,
           newRowId: newRowId
-        }
-        results = newResult;
+        };
       }
     }
 
@@ -245,7 +234,7 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
  * @param callback - The finished callback function. callback(err, results);
  * @param multipleResultSets - Flag indicating whether or not multiple results sets are being returned.
  */
-exports.executeStoredProcedure = function (statement, params, callback, multipleResultSets) {
+exports.executeStoredProcedure = (statement, params, callback, multipleResultSets) => {
   currentAdapter.executeStoredProcedure(statement, params, callback, multipleResultSets);
 };
 
@@ -254,7 +243,7 @@ exports.executeStoredProcedure = function (statement, params, callback, multiple
  * @param executeFunction - The function to be run after the begin transaction statement.
  * @param callback - The finished callback function.
  */
-exports.runTransaction = function (executeFunction, callback) {
+exports.runTransaction = (executeFunction, callback) => {
   currentAdapter.runTransaction(executeFunction, callback);
 };
 
@@ -264,6 +253,7 @@ exports.runTransaction = function (executeFunction, callback) {
 
 /**
  * Builds the list of select fields using an array of mappings.
+ * @param tableName - The table name.
  * @param mappings - The array of mapping objects.
  * @returns {string}
  *
@@ -272,11 +262,11 @@ exports.runTransaction = function (executeFunction, callback) {
  *  rename: String
  * }
  */
-exports.createSelectFields = function(tableName, mappings) {
-  var selectClause = '';
+exports.createSelectFields = (tableName, mappings) => {
+  let selectClause = '';
 
-  for (var i = 0; i < mappings.length; i++) {
-    if (i != 0) {
+  for (let i = 0; i < mappings.length; i++) {
+    if (i !== 0) {
       selectClause += ', ';
     }
 
@@ -295,22 +285,22 @@ exports.createSelectFields = function(tableName, mappings) {
  * @param tableName - The name of the table to insert into.
  * @param parameters - An object of key value pairs.
  */
-exports.generateInsertObject = function (tableName, parameters) {
-  var sql = 'INSERT INTO ' + tableName;
+exports.generateInsertObject = (tableName, parameters) => {
+  let sql = `INSERT INTO ${tableName}`;
 
   // build the parameter lists.
-  var columnNamesString = '';
-  var valuePlaceHolders = '';
-  var paramsArray = [];
+  let columnNamesString = '';
+  let valuePlaceHolders = '';
+  let paramsArray = [];
 
   // keep track of the current index.
-  var index = 0;
+  let index = 0;
 
   // loop over all the keys.
-  for (var key in parameters) {
-    if (parameters.hasOwnProperty(key) && parameters[key] != undefined) {
+  for (let key in parameters) {
+    if (parameters.hasOwnProperty(key) && parameters[key] !== undefined) {
       // if its not the last parameter, add a comma.
-      if (index != 0) {
+      if (index !== 0) {
         columnNamesString += ', ';
         valuePlaceHolders += ', ';
       }
@@ -341,15 +331,15 @@ exports.generateInsertObject = function (tableName, parameters) {
  * @param conditions - The sql condition statement.
  * @param conditionParams - The array of parameters that match the conditions place markers.
  */
-exports.generateUpdateObject = function (tableName, parameters, conditions, conditionParams) {
-  var sql = 'UPDATE ' + tableName + ' SET ';
-  var paramsArray = [];
+exports.generateUpdateObject = (tableName, parameters, conditions, conditionParams) => {
+  let sql = 'UPDATE ' + tableName + ' SET ';
+  let paramsArray = [];
 
-  var index = 0;
+  let index = 0;
 
-  for (var key in parameters) {
+  for (let key in parameters) {
     if (parameters.hasOwnProperty(key)) {
-      if (index != 0) {
+      if (index !== 0) {
         sql += ', ';
       }
 
@@ -366,7 +356,7 @@ exports.generateUpdateObject = function (tableName, parameters, conditions, cond
   sql += 'WHERE ' + conditions;
 
   // add the condition parameters part.
-  for (var i = 0; i < conditionParams.length; i++) {
+  for (let i = 0; i < conditionParams.length; i++) {
     paramsArray.push(conditionParams[i]);
   }
 
@@ -380,10 +370,10 @@ exports.generateUpdateObject = function (tableName, parameters, conditions, cond
  * Converts a value to a boolean value.
  * @param value - the value to convert.
  */
-exports.booleanValue = function(value) {
-  var result = false;
+exports.booleanValue = (value) => {
+  let result = false;
   try {
-    if (!stringUtilities.isEmpty(value)) {
+    if (!StringUtils.isEmpty(value)) {
       if (Buffer.isBuffer(value)) {
         result = validator.toBoolean(value[0].toString());
       }
@@ -406,70 +396,61 @@ exports.booleanValue = function(value) {
  * @param rows - The list of all rows to iterate over.
  * @param callback - The finished callback function.
  */
-exports.groupRows = function (groupByField, rows, callback) {
-  // stores the rows as separate objects.
-  // {
-  //   <groupByFied>: 1,
-  //   rows: []
-  // }
-  var rawRowList = [];
-
+exports.groupRows = (groupByField, rows, callback) => {
   try {
-    // iterate over all the rows and split them into their group objects.
-    async.each(rows,
-      // item processor.
-      function (row, cb) {
-        // get the user id field.
-        var groupByFieldValue = row[groupByField];
+    // stores the rows as separate objects.
+    // {
+    //   <groupByField>: 1,
+    //   rows: []
+    // }
+    let rawRowList = [];
 
-        var props = {};
-        props[groupByField] = groupByFieldValue;
-        var foundObject = _.findWhere(rawRowList, props);
+    _.forEach(rows, (row) => {
+      // get the user id field.
+      let groupByFieldValue = row[groupByField];
 
-        if (!foundObject) {
-          foundObject = {};
-          foundObject[groupByField] = groupByFieldValue;
-          foundObject.rows = [];
-          foundObject.rows.push(row);
-          rawRowList.push(foundObject);
-        }
-        else {
-          foundObject.rows.push(row);
-        }
+      let props = {};
+      props[groupByField] = groupByFieldValue;
+      let foundObject = _.find(rawRowList, props);
 
-        return cb();
-      },
-
-      // finished callback handler.
-      function (err) {
-        return callback(err, rawRowList);
+      if (!foundObject) {
+        foundObject = {};
+        foundObject[groupByField] = groupByFieldValue;
+        foundObject.rows = [];
+        foundObject.rows.push(row);
+        rawRowList.push(foundObject);
+      } else {
+        foundObject.rows.push(row);
       }
-    );
+    });
+
+    // return the data.
+    return callback(null, rawRowList);
   }
-  catch (err) {
-    console.log(err);
-    return callback(err);
+  catch (ex) {
+    return callback(ex);
   }
 };
 
 /**
  * Converts a placeholder filled sql string with the params array for debug printing.
- * @param sql - The sql statement containing placehoders.
+ * @param sql - The sql statement containing placeholders.
  * @param params - The array of parameters.
+ * @param timezone - The timezone.
  * @returns {string}
  */
-exports.queryToString = function (sql, params, timezone) {
-  var final = '';
-  var paramsIndex = 0;
+exports.queryToString = (sql, params, timezone) => {
+  let final = '';
+  let paramsIndex = 0;
 
-  for (var i = 0; i < sql.length; i++) {
-    if (sql.charAt(i) == '?') {
+  for (let i = 0; i < sql.length; i++) {
+    if (sql.charAt(i) === '?') {
       if (typeof params[paramsIndex] == 'string') {
         if (params[paramsIndex].lastIndexOf('[@]', 0) === 0) {
-          final += stringUtilities.replaceAll(params[paramsIndex], '[@]', '@');
+          final += StringUtils.replaceAll(params[paramsIndex], '[@]', '@');
         }
         else {
-          final += "'" + stringUtilities.replaceAll(params[paramsIndex], "'", "\\'") + "'";
+          final += "'" + StringUtils.replaceAll(params[paramsIndex], "'", "\\'") + "'";
         }
       }
       else if (Object.prototype.toString.call(params[paramsIndex]) === '[object Date]') {
@@ -487,26 +468,26 @@ exports.queryToString = function (sql, params, timezone) {
   }
 
   return final;
-}
+};
 
 /**
  * Join the result sets into 1 result set.
  * @param results - The result sets.
  */
-exports.joinResultSets = function(results) {
+exports.joinResultSets = (results) => {
   // check if there is anything in the results.
-  if (!results || results.length == 0) {
+  if (!results || results.length === 0) {
     return results;
   }
 
   // if the results is an array of result sets.
   if (results[0] && _.isArray(results[0])) {
-    var newResults = [];
+    let newResults = [];
 
-    for (var i = 0; i < results.length; i++) {
-      var rs = results[i];
+    for (let i = 0; i < results.length; i++) {
+      let rs = results[i];
 
-      for (var j =0; j < rs.length; j++) {
+      for (let j =0; j < rs.length; j++) {
         newResults.push(rs[j]);
       }
     }
@@ -515,13 +496,19 @@ exports.joinResultSets = function(results) {
   }
 
   return results;
-}
+};
 
+/**
+ * Converts a date to string date.
+ * @param date
+ * @param timeZone
+ * @return {string}
+ */
 function dateToString(date, timeZone) {
-  var dt = new Date(date);
+  let dt = new Date(date);
 
-  if (timeZone && timeZone != 'local') {
-    var tz = convertTimezone(timeZone);
+  if (timeZone && timeZone !== 'local') {
+    let tz = convertTimezone(timeZone);
 
     dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
     if (tz !== false) {
@@ -529,17 +516,23 @@ function dateToString(date, timeZone) {
     }
   }
 
-  var year   = dt.getFullYear();
-  var month  = zeroPad(dt.getMonth() + 1, 2);
-  var day    = zeroPad(dt.getDate(), 2);
-  var hour   = zeroPad(dt.getHours(), 2);
-  var minute = zeroPad(dt.getMinutes(), 2);
-  var second = zeroPad(dt.getSeconds(), 2);
-  var millisecond = zeroPad(dt.getMilliseconds(), 3);
+  let year   = dt.getFullYear();
+  let month  = zeroPad(dt.getMonth() + 1, 2);
+  let day    = zeroPad(dt.getDate(), 2);
+  let hour   = zeroPad(dt.getHours(), 2);
+  let minute = zeroPad(dt.getMinutes(), 2);
+  let second = zeroPad(dt.getSeconds(), 2);
+  let millisecond = zeroPad(dt.getMilliseconds(), 3);
 
   return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
-};
+}
 
+/**
+ * Zero pads numbers.
+ * @param number
+ * @param length
+ * @return {string}
+ */
 function zeroPad(number, length) {
   number = number.toString();
   while (number.length < length) {
@@ -549,12 +542,17 @@ function zeroPad(number, length) {
   return number;
 }
 
+/**
+ * Converts timezones.
+ * @param tz - The timezone.
+ * @return {boolean|number}
+ */
 function convertTimezone(tz) {
-  if (tz == "Z") return 0;
+  if (tz === "Z") return 0;
 
-  var m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
+  let m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
   if (m) {
-    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
   }
   return false;
 }
