@@ -5,7 +5,7 @@ ____________________________________________________________________
 ## Configuration Options
 
     // get the settings options from the config module.
-    var options = {
+    let options = {
       adapterName: String,
       server: String,
       port: String,
