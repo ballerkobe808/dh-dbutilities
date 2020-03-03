@@ -17,7 +17,7 @@
     "validator": "12.2.0"
   },
   "main": "index",
-  "description": "Database utilities for MySQL, MSSQL, and PostgreSQL",
+  "description": "Database utilities for MySQL and MSSQL",
   "repository": {
     "type": "git",
     "url": "git://github.com/uranakam/dh-dbutilities.git"
