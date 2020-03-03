@@ -5,7 +5,7 @@ ____________________________________________________________________
 ##Configuration Options
 
   // get the settings options from the config module.
-  var options = {
+  let options = {
     server: String,
     port: String,
     dbName: String,

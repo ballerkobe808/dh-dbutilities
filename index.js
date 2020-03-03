@@ -4,7 +4,7 @@
 const _ = require('lodash');
 const validator = require('validator');
 const async = require('async');
-const { StringUtils } = require('dh-node-utilities');
+const StringUtils  = require('./utilities/string-utilities');
 
 // Adapter names.
 const constants = require('./constants/constants');
@@ -167,18 +167,13 @@ exports.runStatementReturnResult = function (statement, params, idField, callbac
     if (_.isEqual(currentAdapterName, constants.MYSQL_ADAPTER)) {
       results.newRowId = results.insertId;
     }
-    else if (_.isEqual(currentAdapterName, constants.POSTGRESQL_ADAPTER)) {
-      if (results.rows && results.rows.length > 0) {
-        results.newRowId = results.rows[0][idField];
-      }
-    }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
         let newRowId = results[0][idField];
         let newResult = {
           resultSet: results,
           newRowId: newRowId
-        }
+        };
         results = newResult;
       }
     }
@@ -218,12 +213,6 @@ exports.runStatementInTransactionReturnResult = function (connection, statement,
 
     if (_.isEqual(currentAdapterName, constants.MYSQL_ADAPTER)) {
       results.newRowId = results.insertId;
-    }
-    else if (_.isEqual(currentAdapterName, constants.POSTGRESQL_ADAPTER)) {
-      if (results.rows && results.rows.length > 0) {
-        console.log(results.rows[0]);
-        results.newRowId = results.rows[0][idField];
-      }
     }
     else if (_.isEqual(currentAdapterName, constants.MSSQL_ADAPTER)) {
       if (results && results.length > 0) {
@@ -411,7 +400,7 @@ exports.booleanValue = function(value) {
 exports.groupRows = function (groupByField, rows, callback) {
   // stores the rows as separate objects.
   // {
-  //   <groupByFied>: 1,
+  //   <groupByField>: 1,
   //   rows: []
   // }
   let rawRowList = [];
@@ -456,8 +445,9 @@ exports.groupRows = function (groupByField, rows, callback) {
 
 /**
  * Converts a placeholder filled sql string with the params array for debug printing.
- * @param sql - The sql statement containing placehoders.
+ * @param sql - The sql statement containing placeholders.
  * @param params - The array of parameters.
+ * @param timezone - The timezone.
  * @returns {string}
  */
 exports.queryToString = function (sql, params, timezone) {
@@ -465,7 +455,7 @@ exports.queryToString = function (sql, params, timezone) {
   let paramsIndex = 0;
 
   for (let i = 0; i < sql.length; i++) {
-    if (sql.charAt(i) == '?') {
+    if (sql.charAt(i) === '?') {
       if (typeof params[paramsIndex] == 'string') {
         if (params[paramsIndex].lastIndexOf('[@]', 0) === 0) {
           final += StringUtils.replaceAll(params[paramsIndex], '[@]', '@');
@@ -489,7 +479,7 @@ exports.queryToString = function (sql, params, timezone) {
   }
 
   return final;
-}
+};
 
 /**
  * Join the result sets into 1 result set.
@@ -497,7 +487,7 @@ exports.queryToString = function (sql, params, timezone) {
  */
 exports.joinResultSets = function(results) {
   // check if there is anything in the results.
-  if (!results || results.length == 0) {
+  if (!results || results.length === 0) {
     return results;
   }
 
@@ -517,12 +507,12 @@ exports.joinResultSets = function(results) {
   }
 
   return results;
-}
+};
 
 function dateToString(date, timeZone) {
   let dt = new Date(date);
 
-  if (timeZone && timeZone != 'local') {
+  if (timeZone && timeZone !== 'local') {
     let tz = convertTimezone(timeZone);
 
     dt.setTime(dt.getTime() + (dt.getTimezoneOffset() * 60000));
@@ -540,7 +530,7 @@ function dateToString(date, timeZone) {
   let millisecond = zeroPad(dt.getMilliseconds(), 3);
 
   return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
-};
+}
 
 function zeroPad(number, length) {
   number = number.toString();
@@ -552,11 +542,11 @@ function zeroPad(number, length) {
 }
 
 function convertTimezone(tz) {
-  if (tz == "Z") return 0;
+  if (tz === "Z") return 0;
 
   let m = tz.match(/([\+\-\s])(\d\d):?(\d\d)?/);
   if (m) {
-    return (m[1] == '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
+    return (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) + ((m[3] ? parseInt(m[3], 10) : 0) / 60)) * 60;
   }
   return false;
 }
