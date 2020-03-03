@@ -6,7 +6,6 @@
     "email": "uranakam@gmail.com"
   },
   "dependencies": {
-    "async": "3.2.0",
     "connect-mssql-v2": "1.4.1",
     "connect-mysql": "2.2.5",
     "express": "4.17.1",

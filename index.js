@@ -3,7 +3,6 @@
 // dependencies.
 const _ = require('lodash');
 const validator = require('validator');
-const async = require('async');
 const StringUtils  = require('./utilities/string-utilities');
 
 // Adapter names.
@@ -398,48 +397,38 @@ exports.booleanValue = (value) => {
  * @param callback - The finished callback function.
  */
 exports.groupRows = (groupByField, rows, callback) => {
-  // stores the rows as separate objects.
-  // {
-  //   <groupByField>: 1,
-  //   rows: []
-  // }
-  let rawRowList = [];
-
   try {
-    // iterate over all the rows and split them into their group objects.
-    async.each(rows,
-      // item processor.
-      function (row, cb) {
-        // get the user id field.
-        let groupByFieldValue = row[groupByField];
+    // stores the rows as separate objects.
+    // {
+    //   <groupByField>: 1,
+    //   rows: []
+    // }
+    let rawRowList = [];
 
-        let props = {};
-        props[groupByField] = groupByFieldValue;
-        let foundObject = _.find(rawRowList, props);
+    _.forEach(rows, (row) => {
+      // get the user id field.
+      let groupByFieldValue = row[groupByField];
 
-        if (!foundObject) {
-          foundObject = {};
-          foundObject[groupByField] = groupByFieldValue;
-          foundObject.rows = [];
-          foundObject.rows.push(row);
-          rawRowList.push(foundObject);
-        }
-        else {
-          foundObject.rows.push(row);
-        }
+      let props = {};
+      props[groupByField] = groupByFieldValue;
+      let foundObject = _.find(rawRowList, props);
 
-        return cb();
-      },
-
-      // finished callback handler.
-      function (err) {
-        return callback(err, rawRowList);
+      if (!foundObject) {
+        foundObject = {};
+        foundObject[groupByField] = groupByFieldValue;
+        foundObject.rows = [];
+        foundObject.rows.push(row);
+        rawRowList.push(foundObject);
+      } else {
+        foundObject.rows.push(row);
       }
-    );
+    });
+
+    // return the data.
+    return callback(null, rawRowList);
   }
-  catch (err) {
-    console.log(err);
-    return callback(err);
+  catch (ex) {
+    return callback(ex);
   }
 };
 
